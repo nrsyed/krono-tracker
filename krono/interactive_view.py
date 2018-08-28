@@ -2,9 +2,9 @@ import curses
 
 class InteractiveView:
     def __init__(self, strings):
-        self.strings = strings
+        self.strings = ["[ ] " + string for string in strings]
         self.instructions = "Up: [Up/k], Down [Down/j], Select: [Space], Quit: [q]"
-        self.selection = None
+        self.selection = []
 
     def start(self):
         self._curses_wrapper()
@@ -22,7 +22,6 @@ class InteractiveView:
         height, width = scr.getmaxyx()
         self._reprint(scr, 0, height)
 
-        selection = None
         line = 0
         while True:
             key = scr.getch()
@@ -48,8 +47,14 @@ class InteractiveView:
                     line += 1
                     scr.addstr(self.strings[line], curses.A_REVERSE)
             elif key == ord(" "):
-                self.selection = line
-                break
+                # Toggle line selection.
+                if line not in self.selection:
+                    self.selection.append(line)
+                    self.strings[line] = "[*] " + self.strings[line][4:]
+                else:
+                    self.selection.remove(line)
+                    self.strings[line] = "[ ] " + self.strings[line][4:]
+                scr.addstr(y, 0, self.strings[line], curses.A_REVERSE)
             elif key == ord("q"):
                 break
 
@@ -58,6 +63,10 @@ class InteractiveView:
         del scr
 
     def _reprint(self, scr, line, height):
+        """
+        Erase and reprint the entire curses window, beginning with "line"
+        (the index in "strings" corresponding to the first line of the window).
+        """
         scr.clrtoeol()
         scr.addstr(0, 0, self.strings[line], curses.A_REVERSE)
         i = line + 1
