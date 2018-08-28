@@ -1,8 +1,8 @@
 import curses
 
 class InteractiveView:
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, strings):
+        self.strings = strings
         self.instructions = "Up: [Up/k], Down [Down/j], Select: [Space], Quit: [q]"
         self.selection = None
 
@@ -29,24 +29,24 @@ class InteractiveView:
             y, _ = scr.getyx()
             if (key == curses.KEY_UP or key == ord("k")) and line > 0:
                 if y > 0:
-                    scr.addstr(y, 0, self.data[line])
+                    scr.addstr(y, 0, self.strings[line])
                     line -= 1
                     scr.move(y-1, 0)
-                    scr.addstr(y-1, 0, self.data[line], curses.A_REVERSE)
+                    scr.addstr(y-1, 0, self.strings[line], curses.A_REVERSE)
                 else:
                     line -= 1
                     self._reprint(scr, line, height)
-            elif (key == curses.KEY_DOWN or key == ord("j")) and line < len(self.data) - 1:
+            elif (key == curses.KEY_DOWN or key == ord("j")) and line < len(self.strings) - 1:
                 if y < height - 1:
-                    scr.addstr(y, 0, self.data[line])
+                    scr.addstr(y, 0, self.strings[line])
                     line += 1
                     scr.move(y+1, 0)
-                    scr.addstr(y+1, 0, self.data[line], curses.A_REVERSE)
+                    scr.addstr(y+1, 0, self.strings[line], curses.A_REVERSE)
                 else:
-                    scr.addstr(y, 0, self.data[line])
+                    scr.addstr(y, 0, self.strings[line])
                     scr.addstr("\n")
                     line += 1
-                    scr.addstr(self.data[line], curses.A_REVERSE)
+                    scr.addstr(self.strings[line], curses.A_REVERSE)
             elif key == ord(" "):
                 self.selection = line
                 break
@@ -59,12 +59,12 @@ class InteractiveView:
 
     def _reprint(self, scr, line, height):
         scr.clrtoeol()
-        scr.addstr(0, 0, self.data[line], curses.A_REVERSE)
+        scr.addstr(0, 0, self.strings[line], curses.A_REVERSE)
         i = line + 1
         y = 1
-        while i < len(self.data) and y < height:
+        while i < len(self.strings) and y < height:
             scr.clrtoeol()
-            scr.addstr(y, 0, self.data[i])
+            scr.addstr(y, 0, self.strings[i])
             i += 1
             y += 1
         scr.move(0, 0)
