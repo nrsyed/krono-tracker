@@ -98,8 +98,6 @@ class CLI(cmd.Cmd):
                 session_list.append(whole_str)
 
             selection = InteractiveView(session_list).start()
-            if selection:
-                print("Session {} selected".format(selection + 1))
         else:
             print("Error: No log file loaded.")
 
