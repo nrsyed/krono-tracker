@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 from log import Log
-from interactive_view import InteractiveView
+from interactive_list import InteractiveList
 
 def clear():
     os.system("clear")
@@ -97,7 +97,7 @@ class CLI(cmd.Cmd):
                 whole_str = "Session {:d}: {} | {}".format(i+1, start_str, end_str)
                 session_list.append(whole_str)
 
-            selection = InteractiveView(session_list).start()
+            selection = InteractiveList(session_list).start()
         else:
             print("Error: No log file loaded.")
 
