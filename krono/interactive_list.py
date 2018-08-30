@@ -1,6 +1,6 @@
 import curses
 
-class InteractiveView:
+class InteractiveList:
     def __init__(self, strings):
         self.strings = ["[ ] " + string for string in strings]
         self.instructions = "Up: [Up/k], Down [Down/j], Select: [Space], Quit: [q]"
@@ -10,7 +10,7 @@ class InteractiveView:
         self._curses_wrapper()
         return self.selection
         
-    def _interactive_log(self, base):
+    def _interactive_list(self, base):
         base_height, base_width = base.getmaxyx()
         base.addstr(base_height - 1, 1, self.instructions)
         base.refresh()
@@ -84,7 +84,7 @@ class InteractiveView:
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
-            self._interactive_log(base)
+            self._interactive_list(base)
             del base
         finally:
             curses.flushinp()
