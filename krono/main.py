@@ -36,14 +36,12 @@ class CLI(cmd.Cmd):
             return
 
         filepath = os.path.normpath(os.path.join(self.path, arg))
-        if os.path.isfile(filepath):
-            try:
-                self.log = Log().load_file(filepath)
-                print("File loaded.")
-            except:
-                print("Error: Log file could not be loaded.")
-        else:
-            print("Error: The file {} does not exist.".format(filepath))
+        self.log = Log()
+
+        try:
+            self.log.load_file(filepath)
+        except:
+            print("Error: File could not be loaded.")
     
     def do_getdir(self, arg):
         """

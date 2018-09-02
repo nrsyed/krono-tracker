@@ -1,23 +1,76 @@
 import datetime
+import os
 import pickle
+import sqlite3
 
 class Log:
     def __init__(self):
-        self.sessions = None
+        # SQL parameters and variables.
+        self.conn = None
+        self.cursor = None
+        self.table = "sessions"
+        #self.schema = "CREATE TABLE {} (".format(self.table)\
+        self.schema = "CREATE TABLE " + self.table + " ("\
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"\
+             "start TEXT,"\
+             "end TEXT,"\
+             "project TEXT,"\
+             "tags TEXT,"\
+             "notes TEXT)"
+
         self.indices = []
-        #self.sessions_original = None
+        self.sessions = None
+
+    def create_db(self, filepath):
+        try:
+            self.conn = sqlite3.connect(filepath)
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(self.schema)
+            print("{} successfully created.".format(filepath))
+            return True
+        except Error as e:
+            return False
 
     def load_file(self, filepath):
-        sessions = pickle.load(open(filepath, "rb"))
-
-        # Check that list "sessions" was correctly loaded from pickle file.
-        if sessions is None or type(sessions) is not type(list()):
-            raise RuntimeError("Invalid log file.")
+        if not os.path.isfile(filepath):
+            create_file = input("The sqlite database at {}".format(filepath)
+                + " was not found. Create file? (y/n)\n")
+            if create_file.lower() == "y":
+                self.create_db(filepath)
+            else:
+                print("Operation canceled.")
+                return False
         else:
-            self.sessions = sessions
-            self.indices = list(range(len(sessions)))
+            try:
+                self.conn = sqlite3.connect(filepath)
+                self.cursor = self.conn.cursor()
+            except Error as e:
+                return False
 
-        return self
+        # Check that the created or loaded DB has the correct table/schema.
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = self.cursor.fetchall()
+
+        # Check table name.
+        if len(tables) == 0 or tables[0][0] != self.table:
+            print("Error: Database does not contain correct table.")
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+            return False
+
+        column_names = [column[1] for column in self.cursor.execute(
+            "PRAGMA table_info('{}')".format(self.table)).fetchall()]
+
+        if column_names != ["id", "start", "end", "project", "tags", "notes"]:
+            print("Error: Table does not contain correct columns.")
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+            return False
+            
+        print("Database {} loaded.".format(filepath))
+        return True
 
     def sessions_in_range(self, min_date=datetime.date.min,
         max_date=datetime.date.max, exclude_by="both"):
