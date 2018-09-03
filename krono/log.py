@@ -9,7 +9,6 @@ class Log:
         self.conn = None
         self.cursor = None
         self.table = "sessions"
-        #self.schema = "CREATE TABLE {} (".format(self.table)\
         self.schema = "CREATE TABLE " + self.table + " ("\
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"\
              "start TEXT,"\
@@ -18,9 +17,55 @@ class Log:
              "tags TEXT,"\
              "notes TEXT)"
 
-        self.indices = []
-        self.sessions = None
+        self.rows = None
 
+    def add_row(self, start="", end="", project="", tags="", notes=""):
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+        
+        try:
+            self.cursor.execute(
+                "INSERT INTO {} (start, end, project, tags, notes)".format(
+                self.table) + "VALUES (?, ?, ?, ?, ?)",
+                (start, end, project, tags, notes))
+        except:
+            return False
+        
+        return True
+
+    def update_row(self, row_id, **kwargs):
+        # Build SQL update query.
+
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+        elif kwargs is None:
+            return False
+
+        columns = ("start", "end", "project", "tags", "notes")
+        columns_to_update = [column for column in columns if column in kwargs]
+
+        if not columns_to_update:
+            return False
+
+        query = "UPDATE {} SET\n".format(self.table)
+        query_update_strings = []
+        values = []
+        
+        for column in columns_to_update:
+            query_update_strings.append("{} = ?".format(column))
+            values.append(kwargs[column])
+        values.append(row_id)
+
+        query = "UPDATE {} SET\n{}\nWHERE id = ?".format(
+            self.table, ",\n".join(query_update_strings))
+
+        try:
+            self.cursor.execute(query, values)
+            self.conn.commit()
+            return True
+        except:
+            return False
+            
     def create_db(self, filepath):
         try:
             self.conn = sqlite3.connect(filepath)
@@ -31,7 +76,7 @@ class Log:
         except Error as e:
             return False
 
-    def load_file(self, filepath):
+    def load_db(self, filepath):
         if not os.path.isfile(filepath):
             create_file = input("The sqlite database at {}".format(filepath)
                 + " was not found. Create file? (y/n)\n")
@@ -70,102 +115,9 @@ class Log:
             return False
             
         print("Database {} loaded.".format(filepath))
+
         return True
 
-    def sessions_in_range(self, min_date=datetime.date.min,
-        max_date=datetime.date.max, exclude_by="both"):
-        """
-        Given a list of sessions, return a list of indices of those sessions
-        that fall within the given date range.
-
-        @param sessions: List of dicts, where each dict is a session.
-        @param min_date: date object representing date lower bound (inclusive).
-        @param max_date: date object representing date upper bound (inclusive).
-        @param exclude_by: String ("both", "start", "end") indicating whether the
-            start date of a session ("start"), the end date of a session ("end"),
-            or both ("both") must fall within the date range for it to be included
-            in the final list.
-        @return sessions_in_range: List containing only sessions within the date range.
-        """
-
-        if exclude_by == "start":
-            indices_in_range = [i for i, session in enumerate(sessions) if
-                min_date <= session["start_time"].date() <= max_date]
-        elif exclude_by == "end":
-            indices_in_range = [i for i, session in enumerate(sessions) if
-                min_date <= session["end_time"].date() <= max_date]
-        else:
-            indices_in_range = [i for i, session in enumerate(sessions) if
-                min_date <= session["start_time"].date() <= max_date
-                and min_date <= session["end_time"].date() <= max_date]
-
-        self.indices = indices_in_range
-        return indices_in_range 
-
-    @staticmethod
-    def subdivide_sessions_by_date(sessions):
-        """
-        Check list of sessions for sessions spanning multiple days. Subdivide
-        these sessions into several multiple sessions (one per day). Return
-        new list.
-        """
-        updated_sessions = []
-        q = Queue()
-        for i, session in enumerate(sessions):
-            q.put(session)
-            while not q.empty():
-                sess = q.get()
-                if sess["start_time"].day != sess["end_time"].day:
-                    # Get a datetime object corresponding to the beginning of the
-                    # day after the session start time by adding a day and setting
-                    # hour, min, sec, and usec to zero (ie, midnight).
-                    next_day = ((sess["start_time"] + datetime.timedelta(days=1)
-                        ).replace(hour=0, minute=0, second=0, microsecond=0))
-
-                    # Make two copies of the current session. sess_first is the
-                    # part from the start time to the end of the day. sess_next
-                    # is the part from the beginning of the next day to the end_time.
-                    sess_first = dict(sess)
-                    sess_next = dict(sess)
-
-                    # Set the end time of sess_first equal to beginning of next day
-                    # minus one microsecond. Append to new list of sessions.
-                    sess_first["end_time"] = (next_day - datetime.timedelta(microseconds=1))
-                    updated_sessions.append(sess_first)
-
-                    # Set start time of sess_next equal to beginning of next day.
-                    # Add to queue.
-                    sess_next["start_time"] = next_day
-                    q.put(sess_next)
-                else:
-                    updated_sessions.append(sess)
-
-        return updated_sessions
-                
-    def list_sessions(self):
-        """Print a list of sessions, each separated by a newline, to terminal."""
-
-        print("\nList of sessions in currently loaded log file:")
-        for i in self.indices:
-            start_str = "Start: " + self.sessions[i]["start_time"].strftime("%x, %X")
-            end_str = "End: " + self.sessions[i]["end_time"].strftime("%x, %X")
-            print("Session {:d}: ".format(i+1) + start_str + " | " + end_str)
-
-    def total_time(self):
-        """Return the total amount of time of all sessions."""
-
-        total_timedelta = datetime.timedelta()
-        for i in self.indices:
-            total_timedelta += (
-                self.sessions[i]["end_time"] - self.sessions[i]["start_time"])
-
-        total_seconds = total_timedelta.total_seconds()
-        total_time = {
-            "hours": int(total_seconds // 3600),
-            "minutes": int((total_seconds % 3600) // 60),
-            "seconds": int(total_seconds % 60),
-            "hours_only": total_seconds / 3600,
-            "minutes_only": total_seconds / 60,
-            "seconds_only": total_seconds
-            }
-        return total_time
+    def select_all(self):
+        """Select all sessions in the DB."""
+        self.rows = self.cursor.execute("SELECT * FROM {}".format(self.table))
