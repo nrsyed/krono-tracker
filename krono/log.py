@@ -77,20 +77,14 @@ class Log:
             return False
 
     def load_db(self, filepath):
-        if not os.path.isfile(filepath):
-            create_file = input("The sqlite database at {}".format(filepath)
-                + " was not found. Create file? (y/n)\n")
-            if create_file.lower() == "y":
-                self.create_db(filepath)
-            else:
-                print("Operation canceled.")
-                return False
-        else:
-            try:
-                self.conn = sqlite3.connect(filepath)
-                self.cursor = self.conn.cursor()
-            except Error as e:
-                return False
+        if not self.conn or not self.cursor:
+            return False
+
+        try:
+            self.conn = sqlite3.connect(filepath)
+            self.cursor = self.conn.cursor()
+        except:
+            return False
 
         # Check that the created or loaded DB has the correct table/schema.
         self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
