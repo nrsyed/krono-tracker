@@ -7,7 +7,7 @@ setup(
     url="https://github.com/nrsyed/krono-tracker",
     author="Najam R Syed",
     author_email="najam.r.syed@gmail.com",
-    license="MIT",
+    license="GPL",
     packages=["krono"],
     entry_points={
         "console_scripts": ["krono = krono.__main__:main"]},
