@@ -1,6 +1,8 @@
+from __future__ import print_function
 import argparse
 import datetime
 import os
+import sys
 from cli import CLI
 from helpers import datetime_to_string
 from log import Log
@@ -43,7 +45,11 @@ def main():
         last_row_id = log.get_last_row_id()
         sess = Session(log, last_row_id, autosave_interval=args["autosave"])
         sess.start()
-        input("[INFO] New session started. Press Enter to stop.")
+
+        if sys.version_info.major < 3:
+            raw_input("[INFO] New session started. Press Enter to stop.")
+        else:
+            input("[INFO] New session started. Press Enter to stop.")
         current_datetime = datetime_to_string(datetime.datetime.now())
         log.update_row(last_row_id, end=current_datetime)
 

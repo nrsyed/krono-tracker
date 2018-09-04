@@ -1,3 +1,4 @@
+import sys
 import threading
 import time
 from helpers import datetime_to_string
@@ -7,7 +8,13 @@ class Session(threading.Thread):
         self.log = log
         self.last_row_id = last_row_id
         self.autosave_interval = autosave_interval
-        threading.Thread.__init__(self, daemon=True)
+
+        py_version = sys.version_info
+        if py_version.major >= 3 and py_version.minor >= 3:
+            threading.Thread.__init__(self, daemon=True)
+        else:
+            threading.Thread.__init__(self)
+            self.daemon = True
 
     def run(self):
         while True:
