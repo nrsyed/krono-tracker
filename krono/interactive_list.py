@@ -30,7 +30,7 @@ class InteractiveList:
     def start(self):
         self._curses_wrapper()
         return self.selected
-        
+
     def _interactive_list(self, base):
         base_height, base_width = base.getmaxyx()
         base.addstr(base_height - 1, 1, self.instructions)
@@ -149,7 +149,7 @@ class InteractiveList:
             self.strings[line] = "[*] " + self.strings[line][4:]
         else:
             self.strings[line] = "[ ] " + self.strings[line][4:]
-            
+
     def _curses_wrapper(self):
         try:
             base = curses.initscr()

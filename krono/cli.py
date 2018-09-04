@@ -2,7 +2,6 @@ from __future__ import print_function
 import cmd
 import os
 import subprocess
-import sys
 from helpers import clear
 from interactive_list import InteractiveList
 from log import Log
@@ -19,12 +18,13 @@ class CLI(cmd.Cmd):
         if stop:
             clear()
             return True
-        else:
-            print()
+
+        print()
+        return False
 
     def preloop(self):
         clear()
-        
+
     def do_cd(self, arg):
         """
         Change to the given directory.
@@ -90,7 +90,7 @@ class CLI(cmd.Cmd):
             self.log.select_all()
         except:
             print("Error: File could not be loaded.")
-    
+
     def do_ls(self, arg):
         """
         List files in the currently active directory.

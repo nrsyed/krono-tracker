@@ -4,10 +4,10 @@ import os
 def clear():
     os.system("clear")
 
-datetime_fmt = "%Y-%m-%d %H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 def datetime_to_string(dt):
-    return dt.strftime(datetime_fmt)
+    return dt.strftime(DATETIME_FORMAT)
 
 def string_to_datetime(string):
-    return datetime.strptime(string, datetime_fmt)
+    return datetime.strptime(string, DATETIME_FORMAT)

@@ -1,5 +1,3 @@
-import datetime
-import os
 import sqlite3
 
 class Log:
@@ -22,16 +20,16 @@ class Log:
     def add_row(self, start="", end="", project="", tags="", notes=""):
         if self.cursor is None:
             raise RuntimeError("No database loaded")
-        
+
         try:
             self.cursor.execute(
                 "INSERT INTO {} (start, end, project, tags, notes)".format(
-                self.table) + "VALUES (?, ?, ?, ?, ?)",
+                    self.table) + "VALUES (?, ?, ?, ?, ?)",
                 (start, end, project, tags, notes))
             self.conn.commit()
         except:
             return False
-        
+
         return True
 
     def update_row(self, row_id, **kwargs):
@@ -51,7 +49,7 @@ class Log:
         query = "UPDATE {} SET\n".format(self.table)
         query_update_strings = []
         values = []
-        
+
         for column in columns_to_update:
             query_update_strings.append("{} = ?".format(column))
             values.append(kwargs[column])
@@ -66,7 +64,7 @@ class Log:
             return True
         except:
             return False
-            
+
     def create_db(self, filepath):
         try:
             self.conn = sqlite3.connect(filepath)
@@ -88,7 +86,7 @@ class Log:
         tables = self.cursor.fetchall()
 
         # Check table name.
-        if len(tables) == 0 or tables[0][0] != self.table:
+        if not tables or tables[0][0] != self.table:
             print("Error: Database does not contain correct table.")
             self.conn.close()
             self.conn = None
@@ -104,7 +102,7 @@ class Log:
             self.conn = None
             self.cursor = None
             return False
-            
+
         print("Database {} loaded.".format(filepath))
         return True
 
@@ -135,5 +133,5 @@ class Log:
     def format_selected(self):
         """Format the currently selected rows and return a list of strings."""
         formatted = ["Session {}: {} - {} | {}\t| {}\t| {}".format(*row)
-            for row in self.rows]
+                        for row in self.rows]
         return formatted
