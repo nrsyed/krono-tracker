@@ -18,6 +18,7 @@ class Log:
              "notes TEXT)"
 
         self.rows = None
+        self.last_inserted_row = None
 
     def add_row(self, start="", end="", project="", tags="", notes=""):
         if self.cursor is None:
@@ -28,6 +29,7 @@ class Log:
                 "INSERT INTO {} (start, end, project, tags, notes)".format(
                 self.table) + "VALUES (?, ?, ?, ?, ?)",
                 (start, end, project, tags, notes))
+            self.conn.commit()
         except:
             return False
         
@@ -71,9 +73,8 @@ class Log:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
-            print("{} successfully created.".format(filepath))
             return True
-        except Error as e:
+        except:
             return False
 
     def load_db(self, filepath):
@@ -109,8 +110,19 @@ class Log:
             return False
             
         print("Database {} loaded.".format(filepath))
-
         return True
+
+    def get_last_row_id(self):
+        if not self.conn or not self.cursor:
+            return 0
+
+        try:
+            self.cursor.execute("SELECT last_insert_rowid();")
+            self.last_inserted_row = self.cursor.fetchone()[0]
+            return self.last_inserted_row
+        except:
+            return 0
+
 
     def select_all(self):
         """Select all sessions in the DB."""
