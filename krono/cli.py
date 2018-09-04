@@ -8,10 +8,12 @@ from interactive_list import InteractiveList
 from log import Log
 
 class CLI(cmd.Cmd):
-    intro = "Krono Tracker.\nType help or ? to list commands.\n"
-    prompt = "(krono) "
-    path = os.getcwd()
-    log = None
+    def __init__(self):
+        self.intro = "Krono Tracker.\nType help or ? to list commands.\n"
+        self.prompt = "(krono) "
+        self.path = os.getcwd()
+        self.log = None
+        cmd.Cmd.__init__(self)
 
     def postcmd(self, stop, line):
         if stop:
