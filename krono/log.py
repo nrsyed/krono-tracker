@@ -1,6 +1,5 @@
 import datetime
 import os
-import pickle
 import sqlite3
 
 class Log:
