@@ -36,7 +36,7 @@ class CLI(cmd.Cmd):
         self.log = Log()
 
         try:
-            self.log.load_file(filepath)
+            self.log.load_db(filepath)
         except:
             print("Error: File could not be loaded.")
     
@@ -82,19 +82,16 @@ class CLI(cmd.Cmd):
         """
         View the currently loaded log file.
         """
-        #if self.log is not None and self.log.rows is not None:
-        #    sessions = [
-
-        if self.log is not None:
+        self.log.select_all()
+        print(self.log.rows)
+        if self.log is not None and self.log.rows is not None:
             session_list = []
-            for i in self.log.indices:
-                start_str = "Start: {}".format(
-                    self.log.sessions[i]["start_time"].strftime("%x, %X"))
-                end_str = "End: {}".format(
-                    self.log.sessions[i]["end_time"].strftime("%x, %X"))
-                whole_str = "Session {:d}: {} | {}".format(i+1, start_str, end_str)
+            for row in self.log.rows:
+                start_str = "Start: {}".format(row[1])
+                end_str = "End: {}".format(row[2])
+                whole_str = "Session {:d}: {} | {}".format(row[0], start_str, end_str)
                 session_list.append(whole_str)
 
-            selection = InteractiveList(session_list).start()
+            selection = InteractiveList(session_list, select_mode="off").start()
         else:
             print("Error: No log file loaded.")

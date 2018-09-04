@@ -78,9 +78,6 @@ class Log:
             return False
 
     def load_db(self, filepath):
-        if not self.conn or not self.cursor:
-            return False
-
         try:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
@@ -123,7 +120,7 @@ class Log:
         except:
             return 0
 
-
     def select_all(self):
         """Select all sessions in the DB."""
-        self.rows = self.cursor.execute("SELECT * FROM {}".format(self.table))
+        self.cursor.execute("SELECT * FROM {}".format(self.table))
+        self.rows = self.cursor.fetchall()

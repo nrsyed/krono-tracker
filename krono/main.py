@@ -4,9 +4,9 @@ import os
 from cli import CLI
 from helpers import datetime_to_string
 from log import Log
+from session import Session
 
 
-#if __name__ == "__main__":
 def main():
     default_file = "krono.sqlite"
 
@@ -44,3 +44,8 @@ def main():
         sess = Session(log, last_row_id, autosave_interval=args["autosave"])
         sess.start()
         input("[INFO] New session started. Press any key to stop.")
+        current_datetime = datetime_to_string(datetime.datetime.now())
+        log.update_row(last_row_id, end=current_datetime)
+
+if __name__ == "__main__":
+    main()
