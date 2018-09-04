@@ -24,8 +24,26 @@ class CLI(cmd.Cmd):
     def preloop(self):
         clear()
         
+
+    def do_create(self, arg):
+        filepath = os.path.abspath(arg)
+        if not os.path.isfile(filepath):
+            print("Creating database file {}".format(filepath))
+            db_created = Log().create_db(filepath)
+            if db_created:
+                print("Database created.")
+            else:
+                print("Database could not be created.")
+        else:
+            print("Error: File already exists.")
+
     def do_exit(self, arg):
         return True
+
+    def do_getdir(self, arg):
+        """
+        Get the path to the currently active directory."""
+        print(self.path)
 
     def do_load(self, arg):
         if arg == "":
@@ -48,11 +66,6 @@ class CLI(cmd.Cmd):
         except:
             print("Error: File could not be loaded.")
     
-    def do_getdir(self, arg):
-        """
-        Get the path to the currently active directory."""
-        print(self.path)
-
     def do_ls(self, arg):
         """
         List files in the currently active directory."""
