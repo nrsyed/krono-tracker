@@ -17,7 +17,7 @@ class Log:
              "tags TEXT,"\
              "notes TEXT)"
 
-        self.rows = None
+        self.rows = []
         self.last_inserted_row = None
 
     def add_row(self, start="", end="", project="", tags="", notes=""):
@@ -109,6 +109,14 @@ class Log:
         print("Database {} loaded.".format(filepath))
         return True
 
+    def unload_db(self):
+        if self.conn is not None:
+            self.conn.close()
+        self.conn = None
+        self.cursor = None
+        self.rows = []
+        self.last_inserted_row = None
+
     def get_last_row_id(self):
         if not self.conn or not self.cursor:
             return 0
@@ -124,3 +132,9 @@ class Log:
         """Select all sessions in the DB."""
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
+
+    def format_selected(self):
+        """Format the currently selected rows and return a list of strings."""
+        formatted = ["Session {}: {} - {} | {}\t| {}\t| {}".format(*row)
+            for row in self.rows]
+        return formatted

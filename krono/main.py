@@ -43,7 +43,7 @@ def main():
         last_row_id = log.get_last_row_id()
         sess = Session(log, last_row_id, autosave_interval=args["autosave"])
         sess.start()
-        input("[INFO] New session started. Press any key to stop.")
+        input("[INFO] New session started. Press Enter to stop.")
         current_datetime = datetime_to_string(datetime.datetime.now())
         log.update_row(last_row_id, end=current_datetime)
 

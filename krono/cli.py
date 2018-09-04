@@ -33,10 +33,18 @@ class CLI(cmd.Cmd):
             return
 
         filepath = os.path.normpath(os.path.join(self.path, arg))
-        self.log = Log()
+        if not os.path.isfile(filepath):
+            print("Error: File does not exist. Use create to make a new database.")
+            return
 
         try:
+            if self.log is None:
+                self.log = Log()
+            else:
+                self.log.unload_db()
+
             self.log.load_db(filepath)
+            self.log.select_all()
         except:
             print("Error: File could not be loaded.")
     
@@ -50,19 +58,10 @@ class CLI(cmd.Cmd):
         List files in the currently active directory."""
         subprocess.call("ls " + self.path, shell=True)
 
-    def do_print(self, arg):
-        """
-        Print the currently loaded log file.
-        """
-        if self.log is not None:
-            self.log.list_sessions()
-        else:
-            print("Error: No log file loaded.")
-
     def do_setcwd(self, arg):
         """
         Set the active path to the current working directory (directory from
-        which this program is running.
+        which this program is running).
         """
         self.path = os.getcwd()
 
@@ -82,16 +81,11 @@ class CLI(cmd.Cmd):
         """
         View the currently loaded log file.
         """
-        self.log.select_all()
-        print(self.log.rows)
-        if self.log is not None and self.log.rows is not None:
-            session_list = []
-            for row in self.log.rows:
-                start_str = "Start: {}".format(row[1])
-                end_str = "End: {}".format(row[2])
-                whole_str = "Session {:d}: {} | {}".format(row[0], start_str, end_str)
-                session_list.append(whole_str)
-
-            selection = InteractiveList(session_list, select_mode="off").start()
+        if self.log is not None:
+            formatted_rows = self.log.format_selected()
+            if formatted_rows:
+                InteractiveList(formatted_rows, select_mode="off").start()
+            else:
+                print("There are no entries in the current selection.")
         else:
             print("Error: No log file loaded.")
