@@ -26,7 +26,7 @@ def main():
     else:
         log = Log()
         if not os.path.isfile(filepath):
-            print("[INFO] Creating database file {}...".format(filepath))
+            print("[INFO] Creating database file {}".format(filepath))
             db_created = log.create_db(filepath)
             if db_created:
                 print("[INFO] Database created.")
