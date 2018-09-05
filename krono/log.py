@@ -127,11 +127,14 @@ class Log:
 
     def select_all(self):
         """Select all sessions in the DB."""
+
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
 
     def format_selected(self):
         """Format the currently selected rows and return a list of strings."""
-        formatted = ["Session {}: {} - {} | {}\t| {}\t| {}".format(*row)
-                        for row in self.rows]
+
+        width = 8
+        fmt_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}".format(w=width)
+        formatted = [fmt_spec.format(*row[1:]) for row in self.rows]
         return formatted
