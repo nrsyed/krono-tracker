@@ -45,15 +45,17 @@ class CLI(cmd.Cmd):
         """
 
         filepath = os.path.abspath(arg)
-        if not os.path.isfile(filepath):
+        if arg == "":
+            print("Error: No filename entered.")
+        elif os.path.isfile(filepath):
+            print("Error: File already exists.")
+        else:
             print("Creating database file {}".format(filepath))
             db_created = Log().create_db(filepath)
             if db_created:
                 print("Database created.")
             else:
                 print("Database could not be created.")
-        else:
-            print("Error: File already exists.")
 
     def do_exit(self, arg):
         """Exit Krono Tracker."""
