@@ -5,6 +5,7 @@ import os
 import sys
 from cli import CLI
 from helpers import datetime_to_string
+from interactive_list import InteractiveList
 from log import Log
 from session import Session
 
@@ -13,18 +14,30 @@ def main():
     default_file = "krono.sqlite"
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--interactive", action="store_true")
+    ap.add_argument("-a", "--autosave", default=60)
     ap.add_argument("-f", "--file", default=default_file)
+    ap.add_argument("-i", "--interactive", action="store_true")
     ap.add_argument("-p", "--project", default="")
     ap.add_argument("-n", "--notes", default="")
     ap.add_argument("-t", "--tags", default="")
-    ap.add_argument("-a", "--autosave", default=60)
+    ap.add_argument("-v", "--view", action="store_true")
     args = vars(ap.parse_args())
 
     filepath = os.path.abspath(args["file"])
 
     if args["interactive"]:
         CLI().cmdloop()
+    elif args["view"]:
+        if not os.path.isfile(filepath):
+            print("[ERROR] The database at {} does not exist.".format(filepath))
+        else:
+            log = Log()
+            log.load_db(filepath)
+            log.select_all()
+            formatted_rows = log.format_selected()
+            if formatted_rows:
+                InteractiveList(formatted_rows, select_mode="off").start()
+            log.unload_db
     else:
         log = Log()
         if not os.path.isfile(filepath):
