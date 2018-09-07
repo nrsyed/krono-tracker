@@ -23,18 +23,31 @@ class InteractiveList:
         else:
             self.selected = None
 
+        self.base = None
         self.instructions = "Up [Up/k], Down [Down/j], Select [Space], Quit [q]"
         self.height = None
         self.width = None
 
     def start(self):
-        self._curses_wrapper()
+        try:
+            self.base = curses.initscr()
+            curses.noecho()
+            curses.cbreak()
+            curses.curs_set(0)
+            self._interactive_list()
+            self.base = None
+        finally:
+            curses.flushinp()
+            curses.nocbreak()
+            curses.echo()
+            curses.curs_set(1)
+            curses.endwin()
         return self.selected
 
-    def _interactive_list(self, base):
-        base_height, base_width = base.getmaxyx()
-        base.addstr(base_height - 1, 1, self.instructions)
-        base.refresh()
+    def _interactive_list(self):
+        base_height, base_width = self.base.getmaxyx()
+        self.base.addstr(base_height - 1, 1, self.instructions)
+        self.base.refresh()
 
         scr = curses.newwin(base_height - 2, base_width, 0, 0)
         scr.keypad(True)
@@ -115,7 +128,7 @@ class InteractiveList:
             elif key == ord("q"):
                 break
 
-        base.erase()
+        self.base.erase()
         scr.erase()
         del scr
 
@@ -124,10 +137,7 @@ class InteractiveList:
         Erase and reprint the entire curses window, beginning with "first_line"
         (the index in "strings" corresponding to the first line of the window).
         """
-        #scr.clrtoeol()
-        #scr.addstr(0, 0, self.strings[line], curses.A_REVERSE)
-        #i = line + 1
-        #y = 1
+
         i = first_line
         y = 0
         while i < len(self.strings) and y < self.height:
@@ -145,22 +155,8 @@ class InteractiveList:
         @param line The index corresponding to the line in self.strings.
         @param select Whether to select (True) or unselect (False).
         """
+
         if select:
             self.strings[line] = "[*] " + self.strings[line][4:]
         else:
             self.strings[line] = "[ ] " + self.strings[line][4:]
-
-    def _curses_wrapper(self):
-        try:
-            base = curses.initscr()
-            curses.noecho()
-            curses.cbreak()
-            curses.curs_set(0)
-            self._interactive_list(base)
-            del base
-        finally:
-            curses.flushinp()
-            curses.nocbreak()
-            curses.echo()
-            curses.curs_set(1)
-            curses.endwin()
