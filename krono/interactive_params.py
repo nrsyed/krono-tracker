@@ -8,7 +8,7 @@ class InteractiveParams:
     """
 
     def __init__(self, start="0000-01-01 00:00:00", end="9999-12-31 23:59:59",
-                 project="", tags="", notes=""):
+                 project="", tags="", notes="", header_text=""):
         self.params = OrderedDict([
             ("start", list(start)),
             ("end", list(end)),
@@ -20,16 +20,18 @@ class InteractiveParams:
         self.dict_keys = list(self.params.keys())
         self.num_dict_keys = len(self.dict_keys)
 
+        self.header_text = header_text
+        self.base = None
         self.scr = None
 
     def start(self):
         try:
-            self.scr = curses.initscr()
+            self.base = curses.initscr()
             curses.noecho()
             curses.cbreak()
             curses.curs_set(2)
-            self._interactive_filter()
-            self.scr = None
+            self._interactive_params()
+            self.base = None
         finally:
             curses.flushinp()
             curses.nocbreak()
@@ -41,13 +43,18 @@ class InteractiveParams:
         return dict(self.params)
 
     def _interactive_params(self):
-        scr = self.scr
+        base_height, base_width = self.base.getmaxyx()
+        self.base.addstr(0, 1, self.header_text)
+        y_offset = 2
+        instructions = "Navigation [Up/Down/Left/Right/Tab], Select [Enter], Quit [q]"
+        self.base.addstr(self.num_dict_keys + y_offset + 2, 1, instructions)
+        self.base.refresh()
+
+        scr = curses.newwin(self.num_dict_keys, base_width, y_offset, 1)
         scr_height, scr_width = scr.getmaxyx()
         scr.refresh()
         scr.keypad(True)
 
-        y_offset = 2
-        instructions = "Navigation [Up/Down/Left/Right/Tab], Select [Enter], Quit [q]"
 
         min_x = 10
         date_separator_idx = [min_x + i for i, c in enumerate(self.params["start"])
@@ -137,3 +144,6 @@ class InteractiveParams:
                 break
 
         scr.erase()
+
+if __name__ == "__main__":
+    f = InteractiveParams(header_text="Modify").start()
