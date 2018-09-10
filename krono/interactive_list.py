@@ -6,30 +6,38 @@ class InteractiveList:
     potentially select, with the selection(s) being returned to the caller.
     """
 
-    def __init__(self, strings, select_mode="multi"):
+    def __init__(self, strings, select_mode="off"):
         """
         @param strings List of strings (items) to display--one per row.
-        @param select_mode String indicating whether any number of items
-          can be selected ("multi"), a single item can be selected ("single"),
-          or whether to disable selection ("off")
+        @param select_mode String indicating whether items can be selected:
+            "multi": select any number of items using select boxes, with an
+                empty box ("[ ]") next to unselected items and a starred
+                box ("[*]") next to selected items.
+            "single_box": same as "multi" but only a single item can be selected
+                (marked by "[*]" instead of "[ ]") at a time.
+            "single": select a single box by navigating to it and pressing Enter.
+            "off": functionally same as "single"--different instructions shown.
         """
 
         self.select_mode = select_mode.lower()
 
-        if select_mode != "off":
-            self.strings = ["[ ] " + string for string in strings]
-        else:
+        if self.select_mode == "off":
+            self.instructions = "Up [Up/k], Down [Down/j], Done [Enter/q]"
             self.strings = list(strings)
-
-        # self.selected is the selected index (if select_mode = "single")
-        # or a list of selected indices (if select_mode = "multi").
-        if select_mode == "multi":
+        elif self.select_mode == "single":
+            self.instructions = "Up [Up/k], Down [Down/j], Select [Enter], Quit [q]"
+            self.strings = list(strings)
+        else:
+            self.instructions = "Up [Up/k], Down [Down/j], Select [Space]"\
+                ", Done [Enter], Quit [q]"
+            self.strings = ["[ ] " + string for string in strings]
+        
+        if self.select_mode == "multi":
             self.selected = []
         else:
             self.selected = None
 
         self.base = None
-        self.instructions = "Up [Up/k], Down [Down/j], Select [Space], Quit [q]"
         self.height = None
         self.width = None
 
@@ -87,9 +95,9 @@ class InteractiveList:
                     scr.addstr("\n")
                     line += 1
                     scr.addstr(self.strings[line], curses.A_REVERSE)
-            elif key == ord(" ") and self.select_mode != "off":
+            elif key == ord(" ") and self.select_mode in ("multi", "single_box"):
                 # If multiselect enabled, toggle selection and add or remove
-                # entry from self.selected list as necessary. Else if single
+                # entry from self.selected list as necessary. If single_box
                 # select enabled, toggle selection and update selected index.
                 if self.select_mode == "multi":
                     if line not in self.selected:
@@ -99,7 +107,7 @@ class InteractiveList:
                         self.selected.remove(line)
                         self._toggle_string(line, False)
                 else:
-                    # If single select enabled.
+                    # If single_box select enabled.
                     if self.selected is None:
                         self._toggle_string(line, True)
                         self.selected = line
@@ -131,6 +139,9 @@ class InteractiveList:
                 # Reprint the current line with the select-box marked.
                 scr.addstr(y, 0, self.strings[line], curses.A_REVERSE)
             elif key == ord("q"):
+                self.selected = None
+                break
+            elif key == ord("\n"):
                 break
 
         self.base.erase()
