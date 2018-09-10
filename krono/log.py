@@ -1,6 +1,6 @@
 import sqlite3
 from interactive_list import InteractiveList
-from interactive_filter import InteractiveFilter
+from interactive_params import InteractiveParams
 
 class Log:
     def __init__(self):
@@ -18,6 +18,16 @@ class Log:
 
         self.rows = []
         self.last_inserted_row = None
+
+        self.default_filters = {
+            "start": "0000-01-01 00:00:00",
+            "end": "9999-12-31 23:59:59",
+            "project": "",
+            "tags": "",
+            "notes": ""
+            }
+
+        self.filters = dict(self.default_filters)
 
     def add_row(self, start="", end="", project="", tags="", notes=""):
         if self.cursor is None:
@@ -108,6 +118,7 @@ class Log:
             return False
 
         print("Database {} loaded.".format(filepath))
+        self.select_all()
         return True
 
     def select_all(self):

@@ -1,9 +1,9 @@
 from collections import OrderedDict
 import curses
 
-class InteractiveFilter:
+class InteractiveParams:
     """
-    Class to present a curses window of criteria (filters) that can be
+    Class to present a curses window of session parameters that can be
     modified by the user and returned to the caller.
     """
 
