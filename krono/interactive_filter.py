@@ -19,8 +19,6 @@ class InteractiveFilter:
     def _interactive_filter(self):
         scr = self.scr
         scr_height, scr_width = scr.getmaxyx()
-        #for i, key in enumerate(self.filters):
-        #    scr.addstr(i, 0, "{:<8}| {}".format(key, self.filters[key]))
         scr.refresh()
         scr.keypad(True)
 
@@ -127,6 +125,3 @@ class InteractiveFilter:
         for dict_key in self.filters:
             self.filters[dict_key] = "".join(self.filters[dict_key])
         return dict(self.filters)
-
-#if __name__ == "__main__":
-#    f = InteractiveFilter().start()
