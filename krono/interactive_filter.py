@@ -2,13 +2,14 @@ from collections import OrderedDict
 import curses
 
 class InteractiveFilter:
-    def __init__(self):
+    def __init__(self, start="0000-01-01 00:00:00", end="9999-12-31 23:59:59",
+                 project="", tags="", notes=""):
         self.filters = OrderedDict([
-            ("start", list("0000-01-01 00:00:00")),
-            ("end", list("9999-12-31 23:59:59")),
-            ("project", list("")),
-            ("tags", list("")),
-            ("notes", list(""))
+            ("start", list(start)),
+            ("end", list(end)),
+            ("project", list(project)),
+            ("tags", list(tags)),
+            ("notes", list(notes))
             ])
 
         self.dict_keys = list(self.filters.keys())
