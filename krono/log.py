@@ -162,4 +162,4 @@ class Log:
         if formatted_rows:
             InteractiveList(formatted_rows, select_mode="off").start()
         else:
-            print("There are no entries in the current selection.")
+            print("There are no entries matching the current selection.")

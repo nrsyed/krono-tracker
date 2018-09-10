@@ -1,9 +1,14 @@
 import curses
 
 class InteractiveList:
+    """
+    Class to present a list of items that the user can scroll through and
+    potentially select, with the selection(s) being returned to the caller.
+    """
+
     def __init__(self, strings, select_mode="multi"):
         """
-        @param strings List of strings to display.
+        @param strings List of strings (items) to display--one per row.
         @param select_mode String indicating whether any number of items
           can be selected ("multi"), a single item can be selected ("single"),
           or whether to disable selection ("off")
