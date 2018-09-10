@@ -72,13 +72,17 @@ class InteractiveParams:
         def date_move_right():
             if x + 1 in date_separator_idx:
                 scr.move(line, x + 2)
-            elif x < min_x + date_len - 1:
+            elif x == min_x + date_len - 1:
+                scr.move(line, min_x)
+            else:
                 scr.move(line, x + 1)
         
         def date_move_left():
             if x - 1 in date_separator_idx:
                 scr.move(line, x - 2)
-            elif x > min_x:
+            elif x == min_x:
+                scr.move(line, min_x + date_len - 1)
+            else:
                 scr.move(line, x - 1)
 
         def move_right():
