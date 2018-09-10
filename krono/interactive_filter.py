@@ -6,7 +6,7 @@ class InteractiveFilter:
         self.filters = OrderedDict([
             ("start", list("0000-01-01 00:00:00")),
             ("end", list("9999-12-31 23:59:59")),
-            ("project", list("placeholder")),
+            ("project", list("")),
             ("tags", list("")),
             ("notes", list(""))
             ])
@@ -69,8 +69,11 @@ class InteractiveFilter:
             if key == curses.KEY_UP and line > 0:
                 line -= 1
                 scr.move(line, min_x)
-            elif key == curses.KEY_DOWN and line < self.num_dict_keys - 1:
-                line += 1
+            elif key == curses.KEY_DOWN or key == ord("\t"):
+                if line == self.num_dict_keys - 1:
+                    line = 0
+                else:
+                    line += 1
                 scr.move(line, min_x)
             elif key == curses.KEY_RIGHT:
                 if line <= 1:
