@@ -3,7 +3,6 @@ import cmd
 import os
 import subprocess
 from helpers import clear
-from interactive_list import InteractiveList
 from log import Log
 
 class CLI(cmd.Cmd):
@@ -114,10 +113,6 @@ class CLI(cmd.Cmd):
         """
 
         if self.log is not None:
-            formatted_rows = self.log.format_selected()
-            if formatted_rows:
-                InteractiveList(formatted_rows, select_mode="off").start()
-            else:
-                print("There are no entries in the current selection.")
+            self.log.view()
         else:
             print("Error: No log file loaded.")

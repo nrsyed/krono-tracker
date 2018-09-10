@@ -34,10 +34,8 @@ def main():
             log = Log()
             log.load_db(filepath)
             log.select_all()
-            formatted_rows = log.format_selected()
-            if formatted_rows:
-                InteractiveList(formatted_rows, select_mode="off").start()
-            log.unload_db
+            log.view()
+            log.unload_db()
     else:
         log = Log()
         if not os.path.isfile(filepath):
