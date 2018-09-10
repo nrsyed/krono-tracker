@@ -7,14 +7,13 @@ class InteractiveParams:
     modified by the user and returned to the caller.
     """
 
-    def __init__(self, start="0000-01-01 00:00:00", end="9999-12-31 23:59:59",
-                 project="", tags="", notes="", header_text=""):
+    def __init__(self, params, header_text=""):
         self.params = OrderedDict([
-            ("start", list(start)),
-            ("end", list(end)),
-            ("project", list(project)),
-            ("tags", list(tags)),
-            ("notes", list(notes))
+            ("start", list(params.get("start", "0000-01-01 00:00:00"))),
+            ("end", list(params.get("end", "9999-12-31 23:59:59"))),
+            ("project", list(params.get("project", ""))),
+            ("tags", list(params.get("tags", ""))),
+            ("notes", list(params.get("notes", "")))
             ])
 
         self.dict_keys = list(self.params.keys())
@@ -38,9 +37,7 @@ class InteractiveParams:
             curses.echo()
             curses.curs_set(1)
             curses.endwin()
-        for dict_key in self.params:
-            self.params[dict_key] = "".join(self.params[dict_key])
-        return dict(self.params)
+        return self.params
 
     def _interactive_params(self):
         base_height, base_width = self.base.getmaxyx()
@@ -54,7 +51,6 @@ class InteractiveParams:
         scr_height, scr_width = scr.getmaxyx()
         scr.refresh()
         scr.keypad(True)
-
 
         min_x = 10
         date_separator_idx = [min_x + i for i, c in enumerate(self.params["start"])
@@ -129,7 +125,7 @@ class InteractiveParams:
                     del self.params[dict_key][x - min_x - 1]
                     print_line(line)
                     move_left()
-                else:
+                elif line <= 1:
                     date_move_left()
             elif line <= 1 and ord("0") <= key <= ord("9"):
                 dict_key = self.dict_keys[line]
@@ -144,7 +140,19 @@ class InteractiveParams:
                     self.params[dict_key].append(chr(key))
                 print_line(line)
                 move_right()
+            elif key == ord("q"):
+                #TODO: Use different quit key.
+                self.params = None
+                break
             elif key == ord("\n"):
+                for dict_key in self.params:
+                    self.params[dict_key] = "".join(self.params[dict_key])
+
+                    # Set strings consisting entirely of whitespace to "".
+                    if not self.params[dict_key].strip():
+                        self.params[dict_key] = ""
+
+                self.params = dict(self.params)
                 break
 
         scr.erase()

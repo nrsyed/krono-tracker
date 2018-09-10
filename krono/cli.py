@@ -61,7 +61,7 @@ class CLI(cmd.Cmd):
         return True
 
     def do_filter(self, arg):
-        """Filter entries."""
+        """Select criteria to filter entries."""
 
         if self.log is not None:
             self.log.filter_rows()

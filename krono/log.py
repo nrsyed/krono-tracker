@@ -19,7 +19,7 @@ class Log:
         self.rows = []
         self.last_inserted_row = None
 
-        self.default_filters = {
+        self.default_params = {
             "start": "0000-01-01 00:00:00",
             "end": "9999-12-31 23:59:59",
             "project": "",
@@ -27,7 +27,7 @@ class Log:
             "notes": ""
             }
 
-        self.filters = dict(self.default_filters)
+        self.filters = dict(self.default_params)
 
     def add_row(self, start="", end="", project="", tags="", notes=""):
         if self.cursor is None:
@@ -54,19 +54,33 @@ class Log:
             return False
 
     def filter_rows(self):
-        params = InteractiveFilter().start()
-        start = params["start"]
-        end = params["end"]
-
         if self.cursor is None:
             raise RuntimeError("No database loaded")
 
-        try:
-            self.cursor.execute(
-                "SELECT * FROM {} WHERE (start >= ? AND end <= ?)".format(self.table),
-                (start, end))
-            self.rows = self.cursor.fetchall()
-        except:
+        filters = InteractiveParams(
+                    self.filters, header_text="Filter Criteria").start()
+
+        if filters:
+            self.filters = filters
+
+            # Build filter select query. Always include date in query.
+            filter_query = "SELECT * FROM {} WHERE ".format(self.table)
+            filter_query += "(start >= ? AND end <= ?"
+
+            filter_values = [self.filters["start"], self.filters["end"]]
+            for column in ("project", "tags", "notes"):
+                if self.filters[column]:
+                    filter_query += " AND {} LIKE ?".format(column)
+                    filter_values.append("%{}%".format(self.filters[column]))
+            filter_query += ")"
+
+            try:
+                self.cursor.execute(filter_query, filter_values)
+                self.rows = self.cursor.fetchall()
+                return True
+            except:
+                return False
+        else:
             return False
 
     def format_selected(self):
