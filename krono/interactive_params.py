@@ -148,6 +148,3 @@ class InteractiveParams:
                 break
 
         scr.erase()
-
-if __name__ == "__main__":
-    f = InteractiveParams(header_text="Modify").start()
