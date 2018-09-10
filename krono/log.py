@@ -1,5 +1,6 @@
 import sqlite3
 from interactive_list import InteractiveList
+from interactive_filter import InteractiveFilter
 
 class Log:
     def __init__(self):
@@ -39,6 +40,22 @@ class Log:
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
             return True
+        except:
+            return False
+
+    def filter_rows(self):
+        params = InteractiveFilter().start()
+        start = params["start"]
+        end = params["end"]
+
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+
+        try:
+            self.cursor.execute(
+                "SELECT * FROM {} WHERE (start >= ? AND end <= ?)".format(self.table),
+                (start, end))
+            self.rows = self.cursor.fetchall()
         except:
             return False
 

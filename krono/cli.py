@@ -60,6 +60,15 @@ class CLI(cmd.Cmd):
         """Exit Krono Tracker."""
         return True
 
+    def do_filter(self, arg):
+        """Filter entries."""
+
+        if self.log is not None:
+            self.log.filter_rows()
+        else:
+            print("Error: No log file loaded.")
+
+
     def do_getdir(self, arg):
         """
         Get the path to the currently active directory.
