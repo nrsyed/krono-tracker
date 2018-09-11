@@ -13,6 +13,9 @@ class CLI(cmd.Cmd):
         self.log = None
         cmd.Cmd.__init__(self)
 
+    def emptyline(self):
+        pass
+
     def postcmd(self, stop, line):
         if stop:
             clear()
@@ -57,11 +60,16 @@ class CLI(cmd.Cmd):
                 print("Database could not be created.")
 
     def do_exit(self, arg):
-        """Exit Krono Tracker."""
+        """
+        Exit Krono Tracker.
+        """
+
         return True
 
     def do_filter(self, arg):
-        """Select criteria to filter entries."""
+        """
+        Select criteria to filter entries.
+        """
 
         if self.log is not None:
             self.log.filter_rows()
