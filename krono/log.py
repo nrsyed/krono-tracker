@@ -54,6 +54,7 @@ class Log:
             return False
 
     def filter_rows(self):
+        # TODO: sort rows by datetime
         if self.cursor is None:
             raise RuntimeError("No database loaded")
 
@@ -106,15 +107,19 @@ class Log:
         try:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
-        except:
+
+            # Check that the created or loaded DB has the correct table/schema.
+            self.cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table';")
+            tables = self.cursor.fetchall()
+        except sqlite3.DatabaseError as e:
+            print(e)
             return False
 
-        # Check that the created or loaded DB has the correct table/schema.
-        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = self.cursor.fetchall()
 
         # Check table name.
         if not tables or tables[0][0] != self.table:
+            # TODO: Throw error or warning.
             print("Error: Database does not contain correct table.")
             self.conn.close()
             self.conn = None
@@ -131,12 +136,12 @@ class Log:
             self.cursor = None
             return False
 
-        print("Database {} loaded.".format(filepath))
         self.select_all()
         return True
 
     def select_all(self):
         """Select all sessions in the DB."""
+        #TODO: sort rows by datetime
 
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()

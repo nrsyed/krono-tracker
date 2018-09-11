@@ -5,7 +5,6 @@ import os
 import sys
 from cli import CLI
 from helpers import datetime_to_string
-from interactive_list import InteractiveList
 from log import Log
 from session import Session
 
@@ -46,7 +45,12 @@ def main():
             else:
                 print("[ERROR] Database could not be created.")
         else:
-            log.load_db(filepath)
+            print("[INFO] Loading database {}".format(filepath))
+            if (log.load_db(filepath)):
+                print("[INFO] Database loaded.")
+            else:
+                print("[ERROR] Database could not be loaded.")
+                return 1
 
         start_time = datetime.datetime.now()
         log.add_row(
