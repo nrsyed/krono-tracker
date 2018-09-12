@@ -1,6 +1,7 @@
 from __future__ import print_function
 import argparse
 import datetime
+import logging
 import os
 import sys
 from cli import CLI
@@ -10,6 +11,7 @@ from session import Session
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     default_file = "krono.sqlite"
 
     ap = argparse.ArgumentParser()
@@ -28,7 +30,7 @@ def main():
         CLI().cmdloop()
     elif args["view"]:
         if not os.path.isfile(filepath):
-            print("[ERROR] The database at {} does not exist.".format(filepath))
+            logging.error("The database at {} does not exist.".format(filepath))
         else:
             log = Log()
             log.load_db(filepath)
@@ -38,18 +40,18 @@ def main():
     else:
         log = Log()
         if not os.path.isfile(filepath):
-            print("[INFO] Creating database file {}".format(filepath))
+            logging.info("Creating database file {}".format(filepath))
             db_created = log.create_db(filepath)
             if db_created:
-                print("[INFO] Database created.")
+                logging.info("Database created.")
             else:
-                print("[ERROR] Database could not be created.")
+                logging.error("Database could not be created.")
         else:
-            print("[INFO] Loading database {}".format(filepath))
+            logging.info("Loading database {}".format(filepath))
             if (log.load_db(filepath)):
-                print("[INFO] Database loaded.")
+                logging.info("Database loaded.")
             else:
-                print("[ERROR] Database could not be loaded.")
+                logging.error("Database could not be loaded.")
                 return 1
 
         start_time = datetime.datetime.now()

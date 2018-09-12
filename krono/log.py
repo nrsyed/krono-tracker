@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from interactive_list import InteractiveList
 from interactive_params import InteractiveParams
@@ -107,20 +108,17 @@ class Log:
         try:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
-
             # Check that the created or loaded DB has the correct table/schema.
             self.cursor.execute(
                     "SELECT name FROM sqlite_master WHERE type='table';")
             tables = self.cursor.fetchall()
         except sqlite3.DatabaseError as e:
-            print(e)
+            logging.error(e)
             return False
 
 
-        # Check table name.
         if not tables or tables[0][0] != self.table:
-            # TODO: Throw error or warning.
-            print("Error: Database does not contain correct table.")
+            logging.error("Database does not contain correct table.")
             self.conn.close()
             self.conn = None
             self.cursor = None
@@ -130,7 +128,7 @@ class Log:
             "PRAGMA table_info('{}')".format(self.table)).fetchall()]
 
         if column_names != ["id", "start", "end", "project", "tags", "notes"]:
-            print("Error: Table does not contain correct columns.")
+            logging.error("Table does not contain correct columns.")
             self.conn.close()
             self.conn = None
             self.cursor = None
@@ -141,7 +139,7 @@ class Log:
 
     def select_all(self):
         """Select all sessions in the DB."""
-        #TODO: sort rows by datetime
+        # TODO: sort rows by datetime
 
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()

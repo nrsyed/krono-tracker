@@ -1,5 +1,6 @@
 from __future__ import print_function
 import cmd
+import logging
 import os
 import subprocess
 from helpers import clear
@@ -39,7 +40,7 @@ class CLI(cmd.Cmd):
             self.path = new_path
             print(self.path)
         else:
-            print("Error: The directory {} does not exist.".format(new_path))
+            logging.error("The directory {} does not exist.".format(new_path))
 
     def do_create(self, arg):
         """
@@ -48,11 +49,11 @@ class CLI(cmd.Cmd):
 
         filepath = os.path.abspath(arg)
         if arg == "":
-            print("Error: No filename entered.")
+            logging.error("No filename entered.")
         elif os.path.isfile(filepath):
-            print("Error: File already exists.")
+            logging.error("File already exists.")
         else:
-            print("Creating database file {}".format(filepath))
+            logging.info("Creating database file {}".format(filepath))
             db_created = Log().create_db(filepath)
             if db_created:
                 print("Database created.")
@@ -74,7 +75,7 @@ class CLI(cmd.Cmd):
         if self.log is not None:
             self.log.filter_rows()
         else:
-            print("Error: No log file loaded.")
+            logging.error("No log file loaded.")
 
 
     def do_getdir(self, arg):
@@ -95,7 +96,7 @@ class CLI(cmd.Cmd):
 
         filepath = os.path.normpath(os.path.join(self.path, arg))
         if not os.path.isfile(filepath):
-            print("Error: File does not exist. Use create to make a new database.")
+            logging.error("File does not exist. Use create to make a new database.")
             return
 
         try:
@@ -107,7 +108,7 @@ class CLI(cmd.Cmd):
             self.log.load_db(filepath)
             self.log.select_all()
         except:
-            print("Error: File could not be loaded.")
+            logging.error("File could not be loaded.")
 
     def do_ls(self, arg):
         """
@@ -132,4 +133,4 @@ class CLI(cmd.Cmd):
         if self.log is not None:
             self.log.view()
         else:
-            print("Error: No log file loaded.")
+            logging.error("No log file loaded.")
