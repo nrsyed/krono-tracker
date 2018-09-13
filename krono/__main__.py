@@ -9,9 +9,15 @@ from helpers import datetime_to_string
 from log import Log
 from session import Session
 
+# NOTE: The builtin logging module is not to be confused with the custom Log
+# class in the log module of this package, which provides functionality for
+# interfacing with a Krono Tracker event log sqlite file.
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+            level=logging.INFO,
+            format="[%(levelname)s] %(message)s")
+
     default_file = "krono.sqlite"
 
     ap = argparse.ArgumentParser()
