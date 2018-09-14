@@ -73,7 +73,7 @@ class CLI(cmd.Cmd):
         """
 
         if self.log is not None:
-            self.log.filter_rows()
+            self.log.modify_filter()
         else:
             logging.error("No log file loaded.")
 

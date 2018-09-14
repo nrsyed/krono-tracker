@@ -43,8 +43,6 @@ class InteractiveList:
         self.height = None
         self.width = None
 
-        self.start()
-
     def start(self):
         try:
             self.base = curses.initscr()

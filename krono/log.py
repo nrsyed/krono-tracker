@@ -5,6 +5,7 @@ from interactive_params import InteractiveParams
 
 class Log:
     def __init__(self):
+
         # SQL parameters and variables.
         self.conn = None
         self.cursor = None
@@ -18,6 +19,7 @@ class Log:
              "notes TEXT)"
 
         self.rows = []
+        self.formatted_rows = []
         self.last_inserted_row = None
 
         self.default_params = {
@@ -40,6 +42,7 @@ class Log:
                     self.table) + "VALUES (?, ?, ?, ?, ?)",
                 (start, end, project, tags, notes))
             self.conn.commit()
+            self.filter_rows()
         except:
             return False
 
@@ -50,21 +53,18 @@ class Log:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
+            self.select_all()
             return True
         except:
             return False
 
     def filter_rows(self):
+
         # TODO: sort rows by datetime
         if self.cursor is None:
             raise RuntimeError("No database loaded")
 
-        filters = InteractiveParams(
-                    self.filters, header_text="Filter Criteria").start()
-
-        if filters:
-            self.filters = filters
-
+        if self.filters:
             # Build filter select query. Always include date in query.
             filter_query = "SELECT * FROM {} WHERE ".format(self.table)
             filter_query += "(start >= ? AND end <= ?"
@@ -79,6 +79,7 @@ class Log:
             try:
                 self.cursor.execute(filter_query, filter_values)
                 self.rows = self.cursor.fetchall()
+                self.format_selected()
                 return True
             except:
                 return False
@@ -90,8 +91,7 @@ class Log:
 
         width = 8
         fmt_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}".format(w=width)
-        formatted = [fmt_spec.format(*row[1:]) for row in self.rows]
-        return formatted
+        self.formatted_rows = [fmt_spec.format(*row[1:]) for row in self.rows]
 
     def get_last_row_id(self):
         if not self.conn or not self.cursor:
@@ -137,12 +137,21 @@ class Log:
         self.select_all()
         return True
 
+    def modify_filter(self):
+
+        filters = InteractiveParams(
+                    self.filters, header_text="Filter Criteria").start()
+        if filters:
+            self.filters = filters
+            self.filter_rows()
+
     def select_all(self):
         """Select all sessions in the DB."""
         # TODO: sort rows by datetime
 
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
+        self.format_selected()
 
     def unload_db(self):
         if self.conn is not None:
@@ -181,13 +190,15 @@ class Log:
         try:
             self.cursor.execute(query, values)
             self.conn.commit()
+            self.filter_rows()
             return True
         except:
             return False
 
     def view(self):
-        formatted_rows = self.format_selected()
-        if formatted_rows:
-            InteractiveList(formatted_rows, select_mode="off").start()
+
+        if self.formatted_rows:
+            InteractiveList(self.formatted_rows, select_mode="off").start()
         else:
+            # TODO: Standardize logging messages across modules.
             print("There are no entries matching the current selection.")
