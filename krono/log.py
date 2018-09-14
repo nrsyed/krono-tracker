@@ -32,21 +32,8 @@ class Log:
 
         self.filters = dict(self.default_params)
 
-    def add_row(self, start="", end="", project="", tags="", notes=""):
-        if self.cursor is None:
-            raise RuntimeError("No database loaded")
 
-        try:
-            self.cursor.execute(
-                "INSERT INTO {} (start, end, project, tags, notes)".format(
-                    self.table) + "VALUES (?, ?, ?, ?, ?)",
-                (start, end, project, tags, notes))
-            self.conn.commit()
-            self.filter_rows()
-        except:
-            return False
-
-        return True
+    ### Methods for creating, loading, and unloading SQLite DB. ###
 
     def create_db(self, filepath):
         try:
@@ -57,52 +44,6 @@ class Log:
             return True
         except:
             return False
-
-    def filter_rows(self):
-
-        # TODO: sort rows by datetime
-        if self.cursor is None:
-            raise RuntimeError("No database loaded")
-
-        if self.filters:
-            # Build filter select query. Always include date in query.
-            filter_query = "SELECT * FROM {} WHERE ".format(self.table)
-            filter_query += "(start >= ? AND end <= ?"
-
-            filter_values = [self.filters["start"], self.filters["end"]]
-            for column in ("project", "tags", "notes"):
-                if self.filters[column]:
-                    filter_query += " AND {} LIKE ?".format(column)
-                    filter_values.append("%{}%".format(self.filters[column]))
-            filter_query += ")"
-
-            try:
-                self.cursor.execute(filter_query, filter_values)
-                self.rows = self.cursor.fetchall()
-                self.format_selected()
-                return True
-            except:
-                return False
-        else:
-            return False
-
-    def format_selected(self):
-        """Format the currently selected rows and return a list of strings."""
-
-        width = 8
-        fmt_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}".format(w=width)
-        self.formatted_rows = [fmt_spec.format(*row[1:]) for row in self.rows]
-
-    def get_last_row_id(self):
-        if not self.conn or not self.cursor:
-            return 0
-
-        try:
-            self.cursor.execute("SELECT last_insert_rowid();")
-            self.last_inserted_row = self.cursor.fetchone()[0]
-            return self.last_inserted_row
-        except:
-            return 0
 
     def load_db(self, filepath):
         try:
@@ -137,13 +78,71 @@ class Log:
         self.select_all()
         return True
 
-    def modify_filter(self):
+    def unload_db(self):
+        if self.conn is not None:
+            self.conn.close()
+        self.conn = None
+        self.cursor = None
+        self.rows = []
+        self.last_inserted_row = None
 
-        filters = InteractiveParams(
-                    self.filters, header_text="Filter Criteria").start()
-        if filters:
-            self.filters = filters
+
+    ### Methods that interact directly with a loaded DB. ###
+
+    def add_row(self, start="", end="", project="", tags="", notes=""):
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+
+        try:
+            self.cursor.execute(
+                "INSERT INTO {} (start, end, project, tags, notes)".format(
+                    self.table) + "VALUES (?, ?, ?, ?, ?)",
+                (start, end, project, tags, notes))
+            self.conn.commit()
             self.filter_rows()
+        except:
+            return False
+
+        return True
+
+    def filter_rows(self):
+
+        # TODO: sort rows by datetime
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+
+        if self.filters:
+            # Build filter select query. Always include date in query.
+            filter_query = "SELECT * FROM {} WHERE ".format(self.table)
+            filter_query += "(start >= ? AND end <= ?"
+
+            filter_values = [self.filters["start"], self.filters["end"]]
+            for column in ("project", "tags", "notes"):
+                if self.filters[column]:
+                    filter_query += " AND {} LIKE ?".format(column)
+                    filter_values.append("%{}%".format(self.filters[column]))
+            filter_query += ")"
+
+            try:
+                self.cursor.execute(filter_query, filter_values)
+                self.rows = self.cursor.fetchall()
+                self.format_selected()
+                return True
+            except:
+                return False
+        else:
+            return False
+
+    def get_last_row_id(self):
+        if not self.conn or not self.cursor:
+            return 0
+
+        try:
+            self.cursor.execute("SELECT last_insert_rowid();")
+            self.last_inserted_row = self.cursor.fetchone()[0]
+            return self.last_inserted_row
+        except:
+            return 0
 
     def select_all(self):
         """Select all sessions in the DB."""
@@ -152,14 +151,6 @@ class Log:
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
         self.format_selected()
-
-    def unload_db(self):
-        if self.conn is not None:
-            self.conn.close()
-        self.conn = None
-        self.cursor = None
-        self.rows = []
-        self.last_inserted_row = None
 
     def update_row(self, row_id, updated_params):
 
@@ -194,6 +185,24 @@ class Log:
             return True
         except:
             return False
+
+
+    ### Methods that interact with data already extracted from a DB. ###
+
+    def format_selected(self):
+        """Format the currently selected rows and return a list of strings."""
+
+        width = 8
+        fmt_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}".format(w=width)
+        self.formatted_rows = [fmt_spec.format(*row[1:]) for row in self.rows]
+
+    def modify_filter(self):
+
+        filters = InteractiveParams(
+                    self.filters, header_text="Filter Criteria").start()
+        if filters:
+            self.filters = filters
+            self.filter_rows()
 
     def view(self):
 
