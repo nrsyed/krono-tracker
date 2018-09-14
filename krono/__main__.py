@@ -74,7 +74,7 @@ def main():
         else:
             input("[INFO] New session started. Press Enter to stop.")
         current_datetime = datetime_to_string(datetime.datetime.now())
-        log.update_row(last_row_id, end=current_datetime)
+        log.update_row(last_row_id, {"end": current_datetime})
         log.unload_db()
 
 if __name__ == "__main__":

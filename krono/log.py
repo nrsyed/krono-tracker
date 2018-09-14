@@ -152,27 +152,27 @@ class Log:
         self.rows = []
         self.last_inserted_row = None
 
-    def update_row(self, row_id, **kwargs):
-        # Build SQL update query.
+    def update_row(self, row_id, updated_params):
 
         if self.cursor is None:
-            raise RuntimeError("No database loaded")
-        elif kwargs is None:
+            logging.error("No database loaded")
             return False
 
         columns = ("start", "end", "project", "tags", "notes")
-        columns_to_update = [column for column in columns if column in kwargs]
+        cols_to_update = [column for column in columns if column in updated_params]
 
-        if not columns_to_update:
+        if not cols_to_update:
+            logging.debug("No matching keys in dict.")
             return False
 
+        # Build SQL update query.
         query = "UPDATE {} SET\n".format(self.table)
         query_update_strings = []
         values = []
 
-        for column in columns_to_update:
+        for column in cols_to_update:
             query_update_strings.append("{} = ?".format(column))
-            values.append(kwargs[column])
+            values.append(updated_params[column])
         values.append(row_id)
 
         query = "UPDATE {} SET\n{}\nWHERE id = ?".format(

@@ -21,4 +21,4 @@ class Session(threading.Thread):
         while True:
             time.sleep(self.autosave_interval)
             current_datetime = datetime_to_string(datetime.datetime.now())
-            self.log.update_row(self.last_row_id, end=current_datetime)
+            self.log.update_row(self.last_row_id, {"end": current_datetime})
