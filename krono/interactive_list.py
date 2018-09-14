@@ -6,6 +6,8 @@ class InteractiveList:
     potentially select, with the selection(s) being returned to the caller.
     """
 
+    # TODO: Option to begin at the end of the list (i.e., most recent entry).
+
     def __init__(self, strings, select_mode="off"):
         """
         @param strings List of strings (items) to display--one per row.
@@ -40,6 +42,8 @@ class InteractiveList:
         self.base = None
         self.height = None
         self.width = None
+
+        self.start()
 
     def start(self):
         try:

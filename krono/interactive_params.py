@@ -23,6 +23,8 @@ class InteractiveParams:
         self.base = None
         self.scr = None
 
+        self.start()
+
     def start(self):
         try:
             self.base = curses.initscr()
