@@ -19,7 +19,6 @@ class Log:
              "notes TEXT)"
 
         self.rows = []
-        self.formatted_rows = []
         self.last_inserted_row = None
 
         self.default_params = {
@@ -126,7 +125,6 @@ class Log:
             try:
                 self.cursor.execute(filter_query, filter_values)
                 self.rows = self.cursor.fetchall()
-                self.format_selected()
                 return True
             except:
                 return False
@@ -150,7 +148,6 @@ class Log:
 
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
-        self.format_selected()
 
     def update_row(self, row_id, updated_params):
 
@@ -189,13 +186,6 @@ class Log:
 
     ### Methods that interact with data already extracted from a DB. ###
 
-    def format_selected(self):
-        """Format the currently selected rows and return a list of strings."""
-
-        width = 8
-        fmt_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}".format(w=width)
-        self.formatted_rows = [fmt_spec.format(*row[1:]) for row in self.rows]
-
     def modify_filter(self):
 
         filters = InteractiveParams(
@@ -206,8 +196,18 @@ class Log:
 
     def view(self):
 
-        if self.formatted_rows:
-            InteractiveList(self.formatted_rows, select_mode="off").start()
+        formatted_rows = self.formatted_rows
+        if formatted_rows:
+            InteractiveList(formatted_rows, select_mode="off").start()
         else:
             # TODO: Standardize logging messages across modules.
             print("There are no entries matching the current selection.")
+
+    @property
+    def formatted_rows(self):
+        """Format the currently selected rows and return a list of strings."""
+
+        format_spec = "{{}} | {{}} | {{:{w}.{w}}} | {{:{w}.{w}}} | {{:{w}.{w}}}"
+        width = 8
+        format_spec = format_spec.format(w=width)
+        return [format_spec.format(*row[1:]) for row in self.rows]
