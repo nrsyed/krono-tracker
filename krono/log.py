@@ -95,17 +95,35 @@ class Log:
 
     ### Methods that interact directly with a loaded DB. ###
 
-    def add_row(self, start="", end="", project="", tags="", notes=""):
+    def add_row(self, new_row_vals):
         """Add a new row to the DB."""
 
         if self.cursor is None:
             raise RuntimeError("No database loaded")
 
+        # Build SQL insert query.
+
+        # Get the names of columns in new_row_vals corresponding to actual
+        # columns in the table. These column names (and their values) will
+        # be supplied to the INSERT INTO query.
+        cols_with_vals = self.get_valid_columns(new_row_vals)
+
+        query_insert_strings = []
+        value_question_marks = []
+        values = []
+
+        for column in cols_with_vals:
+            query_insert_strings.append("{} = ?".format(column))
+            values.append(new_row_vals[column])
+            value_question_marks.append("?")
+
+        query = "INSERT INTO {} ({}) VALUES ({})".format(
+                self.table,
+                ",".join(cols_with_vals),
+                ",".join(value_question_marks))
+
         try:
-            self.cursor.execute(
-                "INSERT INTO {} (start, end, project, tags, notes)".format(
-                    self.table) + "VALUES (?, ?, ?, ?, ?)",
-                (start, end, project, tags, notes))
+            self.cursor.execute(query, values)
             self.conn.commit()
             self.filter_rows()
         except:
@@ -168,15 +186,13 @@ class Log:
             logging.error("No database loaded")
             return False
 
-        columns = ("start", "end", "project", "tags", "notes")
-        cols_to_update = [column for column in columns if column in updated_params]
+        cols_to_update = self.get_valid_columns(updated_params)
 
         if not cols_to_update:
             logging.debug("No matching keys in dict.")
             return False
 
         # Build SQL update query.
-        query = "UPDATE {} SET\n".format(self.table)
         query_update_strings = []
         values = []
 
@@ -216,6 +232,13 @@ class Log:
         if filters:
             self.filters = filters
             self.filter_rows()
+
+    @staticmethod
+    def get_valid_columns(params):
+        """Return a list of the valid columns in a dict."""
+
+        valid_columns = ("start", "end", "project", "tags", "notes")
+        return [column for column in valid_columns if column in params]
 
     def view(self):
         """List the rows in the current selection with a curses window."""

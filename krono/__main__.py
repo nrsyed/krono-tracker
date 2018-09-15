@@ -61,9 +61,11 @@ def main():
                 return 1
 
         start_time = datetime.datetime.now()
-        log.add_row(
-            start=datetime_to_string(start_time), project=args["project"],
-            tags=args["tags"], notes=args["notes"])
+        log.add_row({
+                "start": datetime_to_string(start_time),
+                "project": args["project"],
+                "tags": args["tags"],
+                "notes": args["notes"]})
 
         last_row_id = log.get_last_row_id()
         sess = Session(log, last_row_id, autosave_interval=args["autosave"])
