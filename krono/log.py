@@ -4,8 +4,9 @@ from interactive_list import InteractiveList
 from interactive_params import InteractiveParams
 
 class Log:
-    def __init__(self):
+    """Class that interacts with and manipulates a Krono SQLite database."""
 
+    def __init__(self):
         # SQL parameters and variables.
         self.conn = None
         self.cursor = None
@@ -35,6 +36,8 @@ class Log:
     ### Methods for creating, loading, and unloading SQLite DB. ###
 
     def create_db(self, filepath):
+        """Make a new SQLite DB file."""
+
         try:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
@@ -45,9 +48,12 @@ class Log:
             return False
 
     def load_db(self, filepath):
+        """Load an existing SQLite DB."""
+
         try:
             self.conn = sqlite3.connect(filepath)
             self.cursor = self.conn.cursor()
+
             # Check that the created or loaded DB has the correct table/schema.
             self.cursor.execute(
                     "SELECT name FROM sqlite_master WHERE type='table';")
@@ -55,7 +61,6 @@ class Log:
         except sqlite3.DatabaseError as e:
             logging.error(e)
             return False
-
 
         if not tables or tables[0][0] != self.table:
             logging.error("Database does not contain correct table.")
@@ -78,6 +83,8 @@ class Log:
         return True
 
     def unload_db(self):
+        """Unload the currently loaded DB."""
+
         if self.conn is not None:
             self.conn.close()
         self.conn = None
@@ -89,6 +96,8 @@ class Log:
     ### Methods that interact directly with a loaded DB. ###
 
     def add_row(self, start="", end="", project="", tags="", notes=""):
+        """Add a new row to the DB."""
+
         if self.cursor is None:
             raise RuntimeError("No database loaded")
 
@@ -105,6 +114,7 @@ class Log:
         return True
 
     def filter_rows(self):
+        """Select rows from the DB based on the current filter criteria."""
 
         # TODO: sort rows by datetime
         if self.cursor is None:
@@ -132,6 +142,8 @@ class Log:
             return False
 
     def get_last_row_id(self):
+        """Get the ID of the last row added to the DB."""
+
         if not self.conn or not self.cursor:
             return 0
 
@@ -144,12 +156,13 @@ class Log:
 
     def select_all(self):
         """Select all sessions in the DB."""
-        # TODO: sort rows by datetime
 
+        # TODO: sort rows by datetime
         self.cursor.execute("SELECT * FROM {}".format(self.table))
         self.rows = self.cursor.fetchall()
 
     def update_row(self, row_id, updated_params):
+        """Update the columns a row in the DB based on its ID number."""
 
         if self.cursor is None:
             logging.error("No database loaded")
@@ -184,24 +197,7 @@ class Log:
             return False
 
 
-    ### Methods that interact with data already extracted from a DB. ###
-
-    def modify_filter(self):
-
-        filters = InteractiveParams(
-                    self.filters, header_text="Filter Criteria").start()
-        if filters:
-            self.filters = filters
-            self.filter_rows()
-
-    def view(self):
-
-        formatted_rows = self.formatted_rows
-        if formatted_rows:
-            InteractiveList(formatted_rows, select_mode="off").start()
-        else:
-            # TODO: Standardize logging messages across modules.
-            print("There are no entries matching the current selection.")
+    ### Methods, properties that do not directly interact with a DB. ###
 
     @property
     def formatted_rows(self):
@@ -211,3 +207,22 @@ class Log:
         width = 8
         format_spec = format_spec.format(w=width)
         return [format_spec.format(*row[1:]) for row in self.rows]
+
+    def modify_filter(self):
+        """Modify the parameters of the current filter."""
+
+        filters = InteractiveParams(
+                    self.filters, header_text="Filter Criteria").start()
+        if filters:
+            self.filters = filters
+            self.filter_rows()
+
+    def view(self):
+        """List the rows in the current selection with a curses window."""
+
+        formatted_rows = self.formatted_rows
+        if formatted_rows:
+            InteractiveList(formatted_rows, select_mode="off").start()
+        else:
+            # TODO: Standardize logging messages across modules.
+            print("There are no entries matching the current selection.")
