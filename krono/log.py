@@ -229,18 +229,20 @@ class Log:
             selection = InteractiveList(
                     self.formatted_rows,
                     select_mode="single").start()
-            row = self.rows[selection]
-            row_id = row[0]
-            modified_params = InteractiveParams(
-                                {
-                                "start": row[1],
-                                "end": row[2],
-                                "project": row[3],
-                                "tags": row[4],
-                                "notes": row[5]
-                                }, header_text="Modify Entry").start()
+            if selection:
+                row = self.rows[selection]
+                row_id = row[0]
+                modified_params = InteractiveParams(
+                                    {
+                                    "start": row[1],
+                                    "end": row[2],
+                                    "project": row[3],
+                                    "tags": row[4],
+                                    "notes": row[5]
+                                    }, header_text="Modify Entry").start()
 
-            self.update_row(row_id, modified_params)
+                if modified_params:
+                    self.update_row(row_id, modified_params)
         else:
             logging.info("There are no entries matching the current selection.")
 
