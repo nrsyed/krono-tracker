@@ -6,6 +6,8 @@ import subprocess
 from helpers import clear
 from log import Log
 
+# TODO: Refactor to utilize method to check if log loaded.
+
 class CLI(cmd.Cmd):
     def __init__(self):
         self.intro = "Krono Tracker.\nType help or ? to list commands.\n"
@@ -117,6 +119,14 @@ class CLI(cmd.Cmd):
 
         subprocess.call("ls " + self.path, shell=True)
 
+    def do_modify(self, arg):
+        """
+        Modify an entry in the currently loaded log file.
+        """
+
+        if self.log_loaded:
+            self.log.modify_entry()
+
     def do_setcwd(self, arg):
         """
         Set the active path to the current working directory
@@ -130,7 +140,14 @@ class CLI(cmd.Cmd):
         View the currently loaded log file.
         """
 
-        if self.log is not None:
+        if self.log_loaded:
             self.log.view()
+
+    @property
+    def log_loaded(self):
+        if self.log is not None:
+            logging.debug("Log file loaded.")
+            return True
         else:
             logging.error("No log file loaded.")
+            return False

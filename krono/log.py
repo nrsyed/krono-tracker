@@ -224,6 +224,26 @@ class Log:
         format_spec = format_spec.format(w=width)
         return [format_spec.format(*row[1:]) for row in self.rows]
 
+    def modify_entry(self):
+        if self.formatted_rows:
+            selection = InteractiveList(
+                    self.formatted_rows,
+                    select_mode="single").start()
+            row = self.rows[selection]
+            row_id = row[0]
+            modified_params = InteractiveParams(
+                                {
+                                "start": row[1],
+                                "end": row[2],
+                                "project": row[3],
+                                "tags": row[4],
+                                "notes": row[5]
+                                }, header_text="Modify Entry").start()
+
+            self.update_row(row_id, modified_params)
+        else:
+            logging.info("There are no entries matching the current selection.")
+
     def modify_filter(self):
         """Modify the parameters of the current filter."""
 
@@ -243,9 +263,7 @@ class Log:
     def view(self):
         """List the rows in the current selection with a curses window."""
 
-        formatted_rows = self.formatted_rows
-        if formatted_rows:
-            InteractiveList(formatted_rows, select_mode="off").start()
+        if self.formatted_rows:
+            InteractiveList(self.formatted_rows, select_mode="off").start()
         else:
-            # TODO: Standardize logging messages across modules.
-            print("There are no entries matching the current selection.")
+            logging.info("There are no entries matching the current selection.")

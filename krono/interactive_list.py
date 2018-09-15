@@ -144,6 +144,7 @@ class InteractiveList:
                 self.selected = None
                 break
             elif key == ord("\n"):
+                self.selected = line
                 break
 
         self.base.erase()

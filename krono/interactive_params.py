@@ -8,6 +8,8 @@ class InteractiveParams:
     """
 
     def __init__(self, params, header_text=""):
+
+        # TODO: Handle case where "start" or "end" are blank.
         self.params = OrderedDict([
             ("start", list(params.get("start", "0000-01-01 00:00:00"))),
             ("end", list(params.get("end", "9999-12-31 23:59:59"))),
