@@ -110,7 +110,7 @@ class Log:
         cols_with_vals = self.get_valid_columns(new_row_vals)
 
         query_insert_strings = []
-        value_question_marks = []
+        value_placeholders = []
         values = []
 
         for column in cols_with_vals:
