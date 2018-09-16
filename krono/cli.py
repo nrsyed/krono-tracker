@@ -6,8 +6,6 @@ import subprocess
 from helpers import clear
 from log import Log
 
-# TODO: Refactor to utilize method to check if log loaded.
-
 class CLI(cmd.Cmd):
     def __init__(self):
         self.intro = "Krono Tracker.\nType help or ? to list commands.\n"
@@ -67,10 +65,8 @@ class CLI(cmd.Cmd):
         Delete entries from the currently loaded log.
         """
 
-        if self.log is not None:
+        if self.log_loaded:
             self.log.delete_entries()
-        else:
-            logging.error("No log file loaded.")
 
     def do_exit(self, arg):
         """
