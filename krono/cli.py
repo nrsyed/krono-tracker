@@ -62,6 +62,16 @@ class CLI(cmd.Cmd):
             else:
                 print("Database could not be created.")
 
+    def do_delete(self, arg):
+        """
+        Delete entries from the currently loaded log.
+        """
+
+        if self.log is not None:
+            self.log.delete_entries()
+        else:
+            logging.error("No log file loaded.")
+
     def do_exit(self, arg):
         """
         Exit Krono Tracker.

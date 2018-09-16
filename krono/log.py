@@ -115,12 +115,12 @@ class Log:
         for column in cols_with_vals:
             query_insert_strings.append("{} = ?".format(column))
             values.append(new_row_vals[column])
-            value_question_marks.append("?")
+            value_placeholders.append("?")
 
         query = "INSERT INTO {} ({}) VALUES ({})".format(
                 self.table,
                 ",".join(cols_with_vals),
-                ",".join(value_question_marks))
+                ",".join(value_placeholders))
 
         try:
             self.cursor.execute(query, values)
@@ -128,7 +128,24 @@ class Log:
             self.filter_rows()
         except:
             return False
+        return True
 
+    def delete(self, row_ids_to_delete):
+        """Delete the given row IDs from the DB."""
+
+        if self.cursor is None:
+            raise RuntimeError("No database loaded")
+
+        if row_ids_to_delete:
+            id_placeholders = ["?"] * len(row_ids_to_delete)
+            query = "DELETE FROM {} WHERE id IN ({})".format(
+                    self.table, ",".join(id_placeholders))
+            try:
+                self.cursor.execute(query, row_ids_to_delete)
+                self.conn.commit()
+                self.filter_rows()
+            except:
+                return False
         return True
 
     def filter_rows(self):
@@ -215,6 +232,16 @@ class Log:
 
     ### Methods, properties that do not directly interact with a DB. ###
 
+    def delete_entries(self):
+        if self.formatted_rows:
+            selections = InteractiveList(
+                    self.formatted_rows,
+                    select_mode="multi").start()
+            if selections:
+                self.delete([self.rows[i][0] for i in selections])
+        else:
+            logging.info("There are no entries matching the current selection.")
+
     @property
     def formatted_rows(self):
         """Format the currently selected rows and return a list of strings."""
@@ -229,7 +256,7 @@ class Log:
             selection = InteractiveList(
                     self.formatted_rows,
                     select_mode="single").start()
-            if selection:
+            if selection is not None:
                 row = self.rows[selection]
                 row_id = row[0]
                 modified_params = InteractiveParams(
