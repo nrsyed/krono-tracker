@@ -44,7 +44,8 @@ class Log:
             self.cursor.execute(self.schema)
             self.select_all()
             return True
-        except:
+        except sqlite3.DatabaseError as e:
+            logging.error(e)
             return False
 
     def load_db(self, filepath):
@@ -126,7 +127,8 @@ class Log:
             self.cursor.execute(query, values)
             self.conn.commit()
             self.filter_rows()
-        except:
+        except Exception as e:
+            logging.error(e)
             return False
         return True
 
@@ -144,7 +146,8 @@ class Log:
                 self.cursor.execute(query, row_ids_to_delete)
                 self.conn.commit()
                 self.filter_rows()
-            except:
+            except Exception as e:
+                logging.error(e)
                 return False
         return True
 
@@ -171,7 +174,8 @@ class Log:
                 self.cursor.execute(filter_query, filter_values)
                 self.rows = self.cursor.fetchall()
                 return True
-            except:
+            except Exception as e:
+                logging.error(e)
                 return False
         else:
             return False
@@ -186,7 +190,8 @@ class Log:
             self.cursor.execute("SELECT last_insert_rowid();")
             self.last_inserted_row = self.cursor.fetchone()[0]
             return self.last_inserted_row
-        except:
+        except Exception as e:
+            logging.error(e)
             return 0
 
     def select_all(self):
@@ -226,7 +231,8 @@ class Log:
             self.conn.commit()
             self.filter_rows()
             return True
-        except:
+        except Exception as e:
+            logging.error(e)
             return False
 
 
@@ -240,7 +246,7 @@ class Log:
             if selections:
                 self.delete([self.rows[i][0] for i in selections])
         else:
-            logging.info("There are no entries matching the current selection.")
+            logging.info("No entries matching the current selection.")
 
     @property
     def formatted_rows(self):
@@ -271,7 +277,7 @@ class Log:
                 if modified_params:
                     self.update_row(row_id, modified_params)
         else:
-            logging.info("There are no entries matching the current selection.")
+            logging.info("No entries matching the current selection.")
 
     def modify_filter(self):
         """Modify the parameters of the current filter."""
@@ -295,4 +301,4 @@ class Log:
         if self.formatted_rows:
             InteractiveList(self.formatted_rows, select_mode="off").start()
         else:
-            logging.info("There are no entries matching the current selection.")
+            logging.info("No entries matching the current selection.")

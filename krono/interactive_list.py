@@ -1,4 +1,5 @@
 import curses
+import logging
 
 class InteractiveList:
     """
@@ -51,6 +52,8 @@ class InteractiveList:
             curses.curs_set(0)
             self._interactive_list()
             self.base = None
+        except Exception as e:
+            logging.critical(e)
         finally:
             curses.flushinp()
             curses.nocbreak()

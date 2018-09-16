@@ -119,8 +119,8 @@ class CLI(cmd.Cmd):
 
             self.log.load_db(filepath)
             self.log.select_all()
-        except:
-            logging.error("File could not be loaded.")
+        except Exception as e:
+            logging.error(e)
 
     def do_ls(self, arg):
         """

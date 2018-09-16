@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import curses
+import logging
 
 class InteractiveParams:
     """
@@ -38,6 +39,8 @@ class InteractiveParams:
             curses.curs_set(2)
             self._interactive_params()
             self.base = None
+        except Exception as e:
+            logging.critical(e)
         finally:
             curses.flushinp()
             curses.nocbreak()
