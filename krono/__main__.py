@@ -21,7 +21,7 @@ def main():
     default_file = "krono.sqlite"
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("-a", "--autosave", default=60)
+    ap.add_argument("-a", "--autosave", default=60, type=int)
     ap.add_argument("-f", "--file", default=default_file)
     ap.add_argument("-i", "--interactive", action="store_true")
     ap.add_argument("-p", "--project", default="")
