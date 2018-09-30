@@ -33,8 +33,11 @@ def main():
     filepath = os.path.abspath(args["file"])
 
     if args["interactive"]:
+        # If interactive mode chosen, enter curses-based command line
+        # interface via CLI class.
         CLI().cmdloop()
     elif args["view"]:
+        # If view chosen, view using Log.view() curses interface.
         if not os.path.isfile(filepath):
             logging.error("The database at {} does not exist.".format(filepath))
         else:
@@ -44,6 +47,7 @@ def main():
             log.view()
             log.unload_db()
     else:
+        # Instantiate Log object. Create DB if necessary, else load existing.
         log = Log()
         if not os.path.isfile(filepath):
             logging.info("Creating database file {}".format(filepath))
@@ -58,8 +62,10 @@ def main():
                 logging.info("Database loaded.")
             else:
                 logging.error("Database could not be loaded.")
+                # TODO: Throw exception instead of return 1.
                 return 1
 
+        # Add new row to end of DB with current datetime as start time.
         start_time = datetime.datetime.now()
         log.add_row({
                 "start": datetime_to_string(start_time),
@@ -67,7 +73,11 @@ def main():
                 "tags": args["tags"],
                 "notes": args["notes"]})
 
+        # Get id of last row added. This will be used to periodically update
+        # DB with new end time in Session thread, as well as at the end of
+        # this function (__main__.main()).
         last_row_id = log.get_last_row_id()
+
         sess = Session(log, last_row_id, autosave_interval=int(args["autosave"]))
         sess.start()
 
@@ -76,6 +86,8 @@ def main():
             raw_input()
         else:
             input()
+
+        # Write current datetime as end time before exiting.
         current_datetime = datetime_to_string(datetime.datetime.now())
         log.update_row(last_row_id, {"end": current_datetime})
         log.unload_db()
