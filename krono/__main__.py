@@ -68,13 +68,14 @@ def main():
                 "notes": args["notes"]})
 
         last_row_id = log.get_last_row_id()
-        sess = Session(log, last_row_id, autosave_interval=args["autosave"])
+        sess = Session(log, last_row_id, autosave_interval=int(args["autosave"]))
         sess.start()
 
+        logging.info("New session started. Press Enter to stop.")
         if sys.version_info.major < 3:
-            raw_input("[INFO] New session started. Press Enter to stop.")
+            raw_input()
         else:
-            input("[INFO] New session started. Press Enter to stop.")
+            input()
         current_datetime = datetime_to_string(datetime.datetime.now())
         log.update_row(last_row_id, {"end": current_datetime})
         log.unload_db()
