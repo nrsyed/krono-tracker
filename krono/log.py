@@ -39,7 +39,7 @@ class Log:
         """Make a new SQLite DB file."""
 
         try:
-            self.conn = sqlite3.connect(filepath)
+            self.conn = sqlite3.connect(filepath, check_same_thread=False)
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
             self.select_all()
@@ -52,7 +52,7 @@ class Log:
         """Load an existing SQLite DB."""
 
         try:
-            self.conn = sqlite3.connect(filepath)
+            self.conn = sqlite3.connect(filepath, check_same_thread=False)
             self.cursor = self.conn.cursor()
 
             # Check that the created or loaded DB has the correct table/schema.

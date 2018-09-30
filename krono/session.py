@@ -1,11 +1,13 @@
 import datetime
+import logging
 import sys
 import threading
 import time
 from helpers import datetime_to_string
 
 class Session(threading.Thread):
-    def __init__(self, log, last_row_id, autosave_interval=60):
+    def __init__(self, log, last_row_id, autosave_interval=60, lock=None):
+        self.lock = lock
         self.log = log
         self.last_row_id = last_row_id
         self.autosave_interval = autosave_interval
@@ -21,4 +23,10 @@ class Session(threading.Thread):
         while True:
             time.sleep(self.autosave_interval)
             current_datetime = datetime_to_string(datetime.datetime.now())
-            self.log.update_row(self.last_row_id, {"end": current_datetime})
+            try:
+                self.lock.acquire()
+                self.log.update_row(self.last_row_id, {"end": current_datetime})
+            except Exception as e:
+                logging.error(e)
+            finally:
+                self.lock.release()

@@ -4,6 +4,7 @@ import datetime
 import logging
 import os
 import sys
+import threading
 from cli import CLI
 from helpers import datetime_to_string
 from log import Log
@@ -78,7 +79,10 @@ def main():
         # this function (__main__.main()).
         last_row_id = log.get_last_row_id()
 
-        sess = Session(log, last_row_id, autosave_interval=int(args["autosave"]))
+        # Use lock to manage access to DB between this and Session threads.
+        db_lock = threading.Lock()
+        sess = Session(log, last_row_id,
+                       autosave_interval=int(args["autosave"]), lock=db_lock)
         sess.start()
 
         logging.info("New session started. Press Enter to stop.")
@@ -89,8 +93,15 @@ def main():
 
         # Write current datetime as end time before exiting.
         current_datetime = datetime_to_string(datetime.datetime.now())
-        log.update_row(last_row_id, {"end": current_datetime})
-        log.unload_db()
+        
+        try:
+            db_lock.acquire()
+            log.update_row(last_row_id, {"end": current_datetime})
+        except Exception as e:
+            logging.error(e)
+        finally:
+            db_lock.release()
+            log.unload_db()
 
 if __name__ == "__main__":
     main()
