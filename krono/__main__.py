@@ -52,11 +52,10 @@ def main():
         log = Log()
         if not os.path.isfile(filepath):
             logging.info("Creating database file {}".format(filepath))
-            db_created = log.create_db(filepath)
-            if db_created:
-                logging.info("Database created.")
-            else:
-                logging.error("Database could not be created.")
+            try:
+                log.create_db(filepath)
+            except Exception as e:
+                logging.error(e)
         else:
             try:
                 log.load_db(filepath)

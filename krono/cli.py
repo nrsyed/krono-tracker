@@ -50,15 +50,13 @@ class CLI(cmd.Cmd):
         filepath = os.path.abspath(arg)
         if arg == "":
             logging.error("No filename entered.")
-        elif os.path.isfile(filepath):
-            logging.error("File already exists.")
-        else:
-            logging.info("Creating database file {}".format(filepath))
-            db_created = Log().create_db(filepath)
-            if db_created:
-                print("Database created.")
-            else:
-                print("Database could not be created.")
+            return
+
+        logging.info("Creating database file {}".format(filepath))
+        try:
+            Log().create_db(filepath)
+        except Exception as e:
+            logging.error(e)
 
     def do_delete(self, arg):
         """
