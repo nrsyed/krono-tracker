@@ -58,13 +58,11 @@ def main():
             else:
                 logging.error("Database could not be created.")
         else:
-            logging.info("Loading database {}".format(filepath))
-            if (log.load_db(filepath)):
-                logging.info("Database loaded.")
-            else:
-                logging.error("Database could not be loaded.")
-                # TODO: Throw exception instead of return 1.
-                return 1
+            try:
+                log.load_db(filepath)
+                logging.info("Loaded database file {}".format(filepath))
+            except Exception as e:
+                logging.error(e)
 
         # Add new row to end of DB with current datetime as start time.
         start_time = datetime.datetime.now()
