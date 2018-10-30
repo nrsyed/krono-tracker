@@ -39,15 +39,19 @@ class Log:
     def create_db(self, filepath):
         """Make a new SQLite DB file."""
 
+        if os.path.isfile(filepath):
+            raise FileExistsError("The file {} already exists.".format(filepath))
+
         try:
             self.conn = sqlite3.connect(filepath, check_same_thread=False)
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
             self.select_all()
-            return True
         except sqlite3.DatabaseError as e:
-            logging.error(e)
-            return False
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+            raise e
 
     def load_db(self, filepath):
         """Load an existing SQLite DB."""
