@@ -62,17 +62,16 @@ class Log:
         try:
             self.conn = sqlite3.connect(filepath, check_same_thread=False)
             self.cursor = self.conn.cursor()
-
-            # Check that the created or loaded DB has the correct table/schema.
-            self.cursor.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table';")
-            tables = self.cursor.fetchall()
         except sqlite3.DatabaseError as e:
             self.conn.close()
             self.conn = None
             self.cursor = None
             raise e
 
+        # Check that the created or loaded DB has the correct table/schema.
+        self.cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table';")
+        tables = self.cursor.fetchall()
         if not tables or tables[0][0] != self.table:
             self.conn.close()
             self.conn = None
