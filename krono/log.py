@@ -79,14 +79,12 @@ class Log:
             "PRAGMA table_info('{}')".format(self.table)).fetchall()]
 
         if column_names != ["id", "start", "end", "project", "tags", "notes"]:
-            logging.error("Table does not contain correct columns.")
             self.conn.close()
             self.conn = None
             self.cursor = None
-            return False
+            raise RuntimeError("Table does not contain correct columns.")
 
         self.select_all()
-        return True
 
     def unload_db(self):
         """Unload the currently loaded DB."""
