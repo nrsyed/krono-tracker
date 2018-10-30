@@ -15,10 +15,6 @@ from session import Session
 # interfacing with a Krono Tracker event log sqlite file.
 
 def main():
-    logging.basicConfig(
-            level=logging.INFO,
-            format="[%(levelname)s] %(message)s")
-
     default_file = "krono.sqlite"
 
     ap = argparse.ArgumentParser()
@@ -29,7 +25,14 @@ def main():
     ap.add_argument("-n", "--notes", default="")
     ap.add_argument("-t", "--tags", default="")
     ap.add_argument("-v", "--view", action="store_true")
+    ap.add_argument("--debug", action="store_true")
     args = vars(ap.parse_args())
+
+    if args["debug"]:
+        logging_level = logging.DEBUG
+    else:
+        logging_level = logging.INFO
+    logging.basicConfig(level=logging_level, format="[%(levelname)s] %(message)s")
 
     filepath = os.path.abspath(args["file"])
 
