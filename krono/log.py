@@ -1,4 +1,5 @@
 import logging
+import os
 import sqlite3
 from interactive_list import InteractiveList
 from interactive_params import InteractiveParams
@@ -50,6 +51,9 @@ class Log:
 
     def load_db(self, filepath):
         """Load an existing SQLite DB."""
+
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError("The database {} was not found.".format(filepath))
 
         try:
             self.conn = sqlite3.connect(filepath, check_same_thread=False)

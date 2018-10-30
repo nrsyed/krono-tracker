@@ -39,14 +39,14 @@ def main():
         CLI().cmdloop()
     elif args["view"]:
         # If view chosen, view using Log.view() curses interface.
-        if not os.path.isfile(filepath):
-            logging.error("The database at {} does not exist.".format(filepath))
-        else:
+        try:
             log = Log()
             log.load_db(filepath)
             log.select_all()
             log.view()
             log.unload_db()
+        except Exception as e:
+            logging.error(e)
     else:
         # Instantiate Log object. Create DB if necessary, else load existing.
         log = Log()

@@ -103,9 +103,6 @@ class CLI(cmd.Cmd):
             return
 
         filepath = os.path.normpath(os.path.join(self.path, arg))
-        if not os.path.isfile(filepath):
-            logging.error("File does not exist. Use create to make a new database.")
-            return
 
         try:
             if self.log is None:
