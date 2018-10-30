@@ -33,8 +33,29 @@ class Log:
 
         self.filters = dict(self.default_params)
 
-
     ### Methods for creating, loading, and unloading SQLite DB. ###
+
+    def _verify_db(self):
+        """Check that the table and schema of a loaded DB are correct."""
+
+        try:
+            self.cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table';")
+            tables = self.cursor.fetchall()
+
+            if not tables or tables[0][0] != self.table:
+                raise RuntimeError("Database does not contain correct table.")
+
+            column_names = [column[1] for column in self.cursor.execute(
+                "PRAGMA table_info('{}')".format(self.table)).fetchall()]
+
+            if column_names != ["id", "start", "end", "project", "tags", "notes"]:
+                raise RuntimeError("Table does not contain correct columns.")
+        except Exception as e:
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+            raise e
 
     def create_db(self, filepath):
         """Make a new SQLite DB file."""
@@ -46,12 +67,14 @@ class Log:
             self.conn = sqlite3.connect(filepath, check_same_thread=False)
             self.cursor = self.conn.cursor()
             self.cursor.execute(self.schema)
-            self.select_all()
         except sqlite3.DatabaseError as e:
             self.conn.close()
             self.conn = None
             self.cursor = None
             raise e
+
+        self._verify_db()
+        self.select_all()
 
     def load_db(self, filepath):
         """Load an existing SQLite DB."""
@@ -68,25 +91,7 @@ class Log:
             self.cursor = None
             raise e
 
-        # Check that the created or loaded DB has the correct table/schema.
-        self.cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table';")
-        tables = self.cursor.fetchall()
-        if not tables or tables[0][0] != self.table:
-            self.conn.close()
-            self.conn = None
-            self.cursor = None
-            raise RuntimeError("Database does not contain correct table.")
-
-        column_names = [column[1] for column in self.cursor.execute(
-            "PRAGMA table_info('{}')".format(self.table)).fetchall()]
-
-        if column_names != ["id", "start", "end", "project", "tags", "notes"]:
-            self.conn.close()
-            self.conn = None
-            self.cursor = None
-            raise RuntimeError("Table does not contain correct columns.")
-
+        self._verify_db()
         self.select_all()
 
     def unload_db(self):
