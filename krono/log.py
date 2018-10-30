@@ -64,15 +64,16 @@ class Log:
                     "SELECT name FROM sqlite_master WHERE type='table';")
             tables = self.cursor.fetchall()
         except sqlite3.DatabaseError as e:
-            logging.error(e)
-            return False
-
-        if not tables or tables[0][0] != self.table:
-            logging.error("Database does not contain correct table.")
             self.conn.close()
             self.conn = None
             self.cursor = None
-            return False
+            raise e
+
+        if not tables or tables[0][0] != self.table:
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+            raise RuntimeError("Database does not contain correct table.")
 
         column_names = [column[1] for column in self.cursor.execute(
             "PRAGMA table_info('{}')".format(self.table)).fetchall()]
