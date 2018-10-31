@@ -214,7 +214,7 @@ class TestDatabaseRowOperations:
             log.add_row(new_row_1)
         assert str(e.value) == "No database loaded."
 
-        # Add rows and verify results.
+        # Assign SQL connection/cursor to Log object.
         conn, cursor = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
@@ -252,6 +252,7 @@ class TestDatabaseRowOperations:
             log.delete([1])
         assert str(e.value) == "No database loaded."
 
+        # Assign SQL connection/cursor to Log object.
         conn, cursor = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
@@ -276,3 +277,88 @@ class TestDatabaseRowOperations:
         cursor.execute("SELECT * FROM sessions")
         db_rows = cursor.fetchall()
         assert len(db_rows) == initial_num_db_rows - 3
+
+    def test_filter_rows(self, log, database, tmpdir):
+        """
+        Test Log.filter_rows().
+
+        The Log.filters attribute is a dict containing keys/values
+        corresponding to the columns of the DB. In the interactive command
+        line interface, the values are updated by the user via an ncurses
+        interface (or by additional command line flags in non-interactive
+        mode.
+
+        Per Log.__init__() method, the default value for Log.filters are:
+
+            self.default_params = {
+                "start": "0000-01-01 00:00:00",
+                "end": "9999-12-31 23:59:59",
+                "project": "",
+                "tags": "",
+                "notes": ""
+                }
+
+            self.filters = dict(self.default_params)
+        """
+
+        # Attempt to call method without a DB connection/cursor.
+        with pytest.raises(RuntimeError) as e:
+            log.filter_rows()
+        assert str(e.value) == "No database loaded."
+
+        # Assign DB connection/cursor to Log object.
+        conn, cursor = database(tmpdir.strpath)
+        log.conn, log.cursor = conn, cursor
+
+        # Run default filter (should return all results).
+        log.filter_rows()
+        assert len(log.rows) == 3
+
+        # Test date filters.
+        log.filters["start"] = "2018-09-01 00:00:00"
+        log.filters["end"] = "2018-11-01 00:00:00"
+        log.filter_rows()
+        assert len(log.rows) == 2
+        assert [row[0] for row in log.rows] == [1, 2]   # Verify filtered row IDs
+
+        log.filters["start"] = "2020-01-01 11:00:00"
+        log.filters["end"] = "2020-01-02 00:00:00"
+        log.filter_rows()
+        assert len(log.rows) == 0
+
+        # Test "project" filter.
+        log.filters["start"] = "0000-01-01 00:00:00"
+        log.filters["end"] = "9999-12-12 23:59:59"
+        log.filters["project"] = "dummy project 3"
+        log.filter_rows()
+        assert len(log.rows) == 1
+        assert log.rows[0][0] == 3      # verify row ID
+
+        # Test changing "project" filter back to blank string.
+        log.filters["project"] = ""
+        log.filter_rows()
+        assert len(log.rows) == 3
+
+        # Test "tags" filter.
+        log.filters["tags"] = "dummy tag 1"
+        log.filter_rows()
+        assert len(log.rows) == 1
+        assert log.rows[0][0] == 1      # verify row ID
+
+        # Test changing "tags" filter back to blank string.
+        log.filters["tags"] = ""
+        log.filter_rows()
+        assert len(log.rows) == 3
+
+        # Test "notes" filter.
+        log.filters["notes"] = "dummy notes 2"
+        log.filter_rows()
+        assert len(log.rows) == 1
+        assert log.rows[0][0] == 2      # verify row ID
+
+        # Test changing "notes" filter back to blank string."
+        log.filters["notes"] = ""
+        log.filter_rows()
+        assert len(log.rows) == 3
+
+        # TODO: remaining tests
