@@ -139,14 +139,9 @@ class Log:
                 ",".join(cols_with_vals),
                 ",".join(value_placeholders))
 
-        try:
-            self.cursor.execute(query, values)
-            self.conn.commit()
-            self.filter_rows()
-        except Exception as e:
-            logging.error(e)
-            return False
-        return True
+        self.cursor.execute(query, values)
+        self.conn.commit()
+        self.filter_rows()
 
     def delete(self, row_ids_to_delete):
         """
@@ -164,14 +159,9 @@ class Log:
             id_placeholders = ["?"] * len(row_ids_to_delete)
             query = "DELETE FROM {} WHERE id IN ({})".format(
                     self.table, ",".join(id_placeholders))
-            try:
-                self.cursor.execute(query, row_ids_to_delete)
-                self.conn.commit()
-                self.filter_rows()
-            except Exception as e:
-                logging.error(e)
-                return False
-        return True
+            self.cursor.execute(query, row_ids_to_delete)
+            self.conn.commit()
+            self.filter_rows()
 
     def filter_rows(self):
         """Select rows from the DB based on the current filter criteria."""
@@ -192,15 +182,8 @@ class Log:
                     filter_values.append("%{}%".format(self.filters[column]))
             filter_query += ")"
 
-            try:
-                self.cursor.execute(filter_query, filter_values)
-                self.rows = self.cursor.fetchall()
-                return True
-            except Exception as e:
-                logging.error(e)
-                return False
-        else:
-            return False
+            self.cursor.execute(filter_query, filter_values)
+            self.rows = self.cursor.fetchall()
 
     def get_last_row_id(self):
         """Get the ID of the last row added to the DB."""
