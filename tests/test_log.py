@@ -180,3 +180,67 @@ class TestCreateLoadUnload:
             log._verify_db()
         assert str(e.value) == "Table does not contain correct columns."
 
+class TestDatabaseRowOperations:
+    """
+    Test methods for Log methods related to modifying DB rows: add,
+    delete, modify, and obtain last modified row ID.
+    """
+
+    def test_add_row(self, log, database, tmpdir):
+        """Test Log.add_row()."""
+
+        # Define test rows to be added.
+
+        # New row with value for just one column
+        new_row_1 = {"start": "2018-10-01 00:00:00"}
+
+        # New row with values for three columns.
+        new_row_2 = {
+                "start": "2018-10-01 00:00:00",
+                "end": "2018-10-01 08:00:00"
+                }
+
+        # New row with values for all columns.
+        new_row_3 = {
+                "start": "2018-10-01 00:00:00",
+                "end": "2018-10-01 08:00:00",
+                "project": "dummy project",
+                "tags": "",
+                "notes": "dummy notes"
+                }
+
+        # Attempt to call Log.add_row() without a DB connection/cursor.
+        with pytest.raises(RuntimeError) as e:
+            log.add_row(new_row_1)
+        assert str(e.value) == "No database loaded."
+
+        # Add rows and verify results.
+        conn, cursor = database(tmpdir.strpath)
+        log.conn, log.cursor = conn, cursor
+
+        # Add and check first row.
+        log.add_row(new_row_1)
+        cursor.execute("SELECT last_insert_rowid();")
+        last_row_id = cursor.fetchone()[0]
+        cursor.execute("SELECT * FROM sessions WHERE id={}".format(last_row_id))
+        row = cursor.fetchone()
+        assert row[1:] == ("2018-10-01 00:00:00", None, None, None, None)
+
+        # Add and check second row.
+        log.add_row(new_row_2)
+        cursor.execute("SELECT last_insert_rowid();")
+        last_row_id = cursor.fetchone()[0]
+        cursor.execute("SELECT * FROM sessions WHERE id={}".format(last_row_id))
+        row = cursor.fetchone()
+        assert row[1:] == ("2018-10-01 00:00:00", "2018-10-01 08:00:00",
+                None, None, None)
+
+        # Add and check third row.
+        log.add_row(new_row_3)
+        cursor.execute("SELECT last_insert_rowid();")
+        last_row_id = cursor.fetchone()[0]
+        cursor.execute("SELECT * FROM sessions WHERE id={}".format(last_row_id))
+        row = cursor.fetchone()
+        assert row[1:] == ("2018-10-01 00:00:00", "2018-10-01 08:00:00",
+                "dummy project", "", "dummy notes")
+
