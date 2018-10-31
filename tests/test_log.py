@@ -18,6 +18,8 @@ def database():
     row = ("2018-09-29 23:00:00", "2018-09-29 23:30:00",
             "dummy project", "dummy tag", "dummy notes")
 
+    # Track number of times factory is called for use in DB filename to
+    # create a unique DB each time instead of loading existing DB.
     num_calls = 0
 
     def _database(directory, table="valid", cols="valid"):
@@ -101,7 +103,7 @@ class TestCreateLoadUnload:
             log.create_db(filepath)
 
     def test_unload_db(self, log, database, tmpdir):
-        """Test DB unload method."""
+        """Test DB unload."""
 
         # Set Log attributes to dummy truthy values.
         conn = database(tmpdir.strpath, table="valid", cols="valid")
@@ -116,7 +118,7 @@ class TestCreateLoadUnload:
         assert log.last_inserted_row is None
 
     def test_load_db(self, log, tmpdir):
-        """Test DB load and unload."""
+        """Test DB load, confirm exception in loading nonexistent file."""
 
         filepath = str(tmpdir.join(self.filename))
 
@@ -124,7 +126,7 @@ class TestCreateLoadUnload:
         with pytest.raises(FileNotFoundError):
             log.load_db(filepath)
 
-        # Create DB (which should automatically load it), then unload.
+        # Create DB (which should automatically load it).
         log.create_db(filepath)
         assert log.conn
         assert log.cursor
