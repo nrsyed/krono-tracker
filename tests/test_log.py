@@ -6,7 +6,7 @@ from krono.log import Log
 @pytest.fixture(scope="function")
 def database():
     """
-    Database factory to produce valid or invalid database with dummy data.
+    Database factory to mock valid or invalid SQLite database.
     """
 
     table_names = {
