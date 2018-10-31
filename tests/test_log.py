@@ -5,6 +5,10 @@ from krono.log import Log
 
 @pytest.fixture(scope="function")
 def database():
+    """
+    Database factory to produce valid or invalid database with dummy data.
+    """
+
     table_names = {
             "valid": "sessions",
             "invalid": "bad_table_name"
@@ -15,8 +19,13 @@ def database():
             "invalid": ("badcol1", "badcol2", "badcol3", "badcol4", "badcol5")
             }
 
-    row = ("2018-09-29 23:00:00", "2018-09-29 23:30:00",
-            "dummy project", "dummy tag", "dummy notes")
+    # Rows with dummy data.
+    row1 = ("2018-09-29 23:00:00", "2018-09-29 23:30:00",
+            "dummy project 1", "dummy tag 1", "dummy notes 1")
+    row2 = ("2018-10-29 23:00:00", "2018-10-29 23:30:00",
+            "dummy project 2", "dummy tag 2", "dummy notes 2")
+    row3 = ("2020-01-01 12:00:00", "2020-01-03 10:00:00",
+            "dummy project 3", "dummy tag 3", "dummy notes 3")
 
     # Track number of times factory is called for use in DB filename to
     # create a unique DB each time instead of loading existing DB.
@@ -29,6 +38,7 @@ def database():
         num_calls += 1
 
         conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
         if table:
             schema = "CREATE TABLE " + table_names[table] + " (" \
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT," \
@@ -40,11 +50,13 @@ def database():
                     + " ({}, {}, {}, {}, {}) ".format(*col_names[cols]) \
                     + "VALUES (?, ?, ?, ?, ?)"
 
-            conn.execute(schema)
-            conn.execute(insert_query, row)
+            cursor.execute(schema)
+            cursor.execute(insert_query, row1)
+            cursor.execute(insert_query, row2)
+            cursor.execute(insert_query, row3)
             conn.commit()
 
-        return conn
+        return (conn, cursor)
 
     return _database
 
@@ -106,9 +118,8 @@ class TestCreateLoadUnload:
         """Test DB unload."""
 
         # Set Log attributes to dummy truthy values.
-        conn = database(tmpdir.strpath, table="valid", cols="valid")
-        log.conn = conn
-        log.cursor = conn.cursor()
+        conn, cursor = database(tmpdir.strpath, table="valid", cols="valid")
+        log.conn, log.cursor = conn, cursor
         log.last_inserted_row = 1
 
         log.unload_db()
@@ -134,37 +145,38 @@ class TestCreateLoadUnload:
     def test_verify_db(self, database, tmpdir):
         """Test verification of DB table and schema."""
 
-        valid_conn = database(tmpdir.strpath, table="valid", cols="valid")
-        no_table_conn = database(tmpdir.strpath, table=None, cols="valid")
-        invalid_table_conn = database(tmpdir.strpath, table="invalid", cols="valid")
-        invalid_cols_conn = database(tmpdir.strpath, table="valid", cols="invalid")
+        valid_conn, valid_cursor = database(
+                tmpdir.strpath, table="valid", cols="valid")
+        no_table_conn, no_table_cursor = database(
+                tmpdir.strpath, table=None, cols="valid")
+        invalid_table_conn, invalid_table_cursor = database(
+                tmpdir.strpath, table="invalid", cols="valid")
+        invalid_cols_conn, invalid_cols_cursor = database(
+                tmpdir.strpath, table="valid", cols="invalid")
 
         # Test valid database.
         log = Log()
-        log.conn = valid_conn
-        log.cursor = valid_conn.cursor()
+        log.conn, log.cursor = valid_conn, valid_cursor
         log._verify_db()
 
         # Test invalid database with no table.
         log = Log()
-        log.conn = no_table_conn
-        log.cursor = no_table_conn.cursor()
+        log.conn, log.cursor = no_table_conn, no_table_cursor
         with pytest.raises(RuntimeError) as e:
             log._verify_db()
         assert str(e.value) == "Database does not contain correct table." 
 
         # Test invalid database with incorrect table name.
         log = Log()
-        log.conn = invalid_table_conn
-        log.cursor = invalid_table_conn.cursor()
+        log.conn, log.cursor = invalid_table_conn, invalid_table_cursor
         with pytest.raises(RuntimeError) as e:
             log._verify_db()
         assert str(e.value) == "Database does not contain correct table." 
 
         # Test invalid database with incorrect columns (but correct table name).
         log = Log()
-        log.conn = invalid_cols_conn
-        log.cursor = invalid_cols_conn.cursor()
+        log.conn, log.cursor = invalid_cols_conn, invalid_cols_cursor
         with pytest.raises(RuntimeError) as e:
             log._verify_db()
         assert str(e.value) == "Table does not contain correct columns."
+
