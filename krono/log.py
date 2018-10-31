@@ -149,7 +149,13 @@ class Log:
         return True
 
     def delete(self, row_ids_to_delete):
-        """Delete the given row IDs from the DB."""
+        """
+        @brief Delete the given row IDs from the DB.
+
+        @param row_ids_to_delete : A list of row ids.
+        """
+
+        # TODO: change method name to delete_rows()
 
         if self.cursor is None:
             raise RuntimeError("No database loaded.")
