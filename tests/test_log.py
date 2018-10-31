@@ -356,7 +356,7 @@ class TestDatabaseRowOperations:
         assert len(log.rows) == 1
         assert log.rows[0][0] == 2      # verify row ID
 
-        # Test changing "notes" filter back to blank string."
+        # Test changing "notes" filter back to blank string.
         log.filters["notes"] = ""
         log.filter_rows()
         assert len(log.rows) == 3
