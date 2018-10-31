@@ -108,10 +108,15 @@ class Log:
     ### Methods that interact directly with a loaded DB. ###
 
     def add_row(self, new_row_vals):
-        """Add a new row to the DB."""
+        """
+        @brief Add a new row to the DB.
+
+        @param new_row_vals : A dict containing key/value pairs corresponding
+            to the column name and value for each column of the new row.
+        """
 
         if self.cursor is None:
-            raise RuntimeError("No database loaded")
+            raise RuntimeError("No database loaded.")
 
         # Build SQL insert query.
 
@@ -147,7 +152,7 @@ class Log:
         """Delete the given row IDs from the DB."""
 
         if self.cursor is None:
-            raise RuntimeError("No database loaded")
+            raise RuntimeError("No database loaded.")
 
         if row_ids_to_delete:
             id_placeholders = ["?"] * len(row_ids_to_delete)
@@ -167,7 +172,7 @@ class Log:
 
         # TODO: sort rows by datetime
         if self.cursor is None:
-            raise RuntimeError("No database loaded")
+            raise RuntimeError("No database loaded.")
 
         if self.filters:
             # Build filter select query. Always include date in query.
@@ -216,7 +221,7 @@ class Log:
         """Update the columns a row in the DB based on its ID number."""
 
         if self.cursor is None:
-            logging.error("No database loaded")
+            logging.error("No database loaded.")
             return False
 
         cols_to_update = self.get_valid_columns(updated_params)
