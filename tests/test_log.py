@@ -244,3 +244,35 @@ class TestDatabaseRowOperations:
         assert row[1:] == ("2018-10-01 00:00:00", "2018-10-01 08:00:00",
                 "dummy project", "", "dummy notes")
 
+    def test_delete(self, log, database, tmpdir):
+        """Test row delete method."""
+
+        # Attempt to call Log.delete() without a DB connection/cursor.
+        with pytest.raises(RuntimeError) as e:
+            log.delete([1])
+        assert str(e.value) == "No database loaded."
+
+        conn, cursor = database(tmpdir.strpath)
+        log.conn, log.cursor = conn, cursor
+
+        # Attempt to pass int instead of list.
+        with pytest.raises(TypeError) as e:
+            log.delete(1)
+        assert str(e.value) == "object of type 'int' has no len()"
+
+        # Get initial number of DB rows.
+        cursor.execute("SELECT * FROM sessions")
+        initial_num_db_rows = len(cursor.fetchall())
+
+        # Delete two rows, then check length and verify identity of result.
+        log.delete([1, 3])
+        cursor.execute("SELECT * FROM sessions")
+        db_rows = cursor.fetchall()
+        assert len(db_rows) == initial_num_db_rows - 2
+        assert db_rows[0][0] == 2   # remaining row id should be 2
+
+        # Delete remaining row, then check length
+        log.delete([2])
+        cursor.execute("SELECT * FROM sessions")
+        db_rows = cursor.fetchall()
+        assert len(db_rows) == initial_num_db_rows - 3
