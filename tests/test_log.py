@@ -286,7 +286,7 @@ class TestDatabaseRowOperations:
         corresponding to the columns of the DB. In the interactive command
         line interface, the values are updated by the user via an ncurses
         interface (or by additional command line flags in non-interactive
-        mode.
+        mode).
 
         Per Log.__init__() method, the default value for Log.filters are:
 
