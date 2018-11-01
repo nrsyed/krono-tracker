@@ -374,3 +374,50 @@ class TestDatabaseOperations:
         log.filters["not_real_column"] = "dummy value"
         log.filter_rows()
         assert len(log.rows) == 2
+
+    def test_update_row(self, log, database, tmpdir):
+        """Test row update method."""
+
+        # Attempt to call method without a DB connection/cursor.
+        with pytest.raises(RuntimeError) as e:
+            log.update_row(1, None)
+        assert str(e.value) == "No database loaded."
+
+        # Assign DB connection/cursor to Log object.
+        conn, cursor = database(tmpdir.strpath)
+        log.conn, log.cursor = conn, cursor
+
+        # Check that exception is raised if no valid column names
+        # (dict keys) are supplied.
+        with pytest.raises(RuntimeError) as e:
+            log.update_row(1, {})
+        assert str(e.value) == "No valid parameters supplied."
+
+        with pytest.raises(RuntimeError) as e:
+            log.update_row(1, {"invalid_col": "dummy value"})
+        assert str(e.value) == "No valid parameters supplied."
+
+        # Test update of various combinations of (valid) parameters.
+        log.update_row(1, {"start": "2006-06-06 06:00:00"})
+        assert log.rows[0] == (1, "2006-06-06 06:00:00", "2018-09-29 23:30:00",
+                "dummy project 1", "dummy tag 1", "dummy notes 1")
+
+        log.update_row(2, {
+            "start": "2016-07-07 07:00:00",
+            "end": "2016-07-07 15:00:00",
+            "project": "updated project name",
+            "tags": "updated tag",
+            "notes": ""
+            })
+        assert log.rows[1] == (2, "2016-07-07 07:00:00", "2016-07-07 15:00:00",
+                "updated project name", "updated tag", "")
+
+        # Test a mix of valid and invalid parameters.
+        log.update_row(3, {
+            "start": "2019-12-31 22:30:00",
+            "invalid_col": "dummy value",
+            "tags": "updated tag 3",
+            "invalid_col_2": "dummy value 2"
+            })
+        assert log.rows[2] == (3, "2019-12-31 22:30:00", "2020-01-03 10:00:00",
+                "dummy project 3", "updated tag 3", "dummy notes 3")
