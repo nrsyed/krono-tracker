@@ -361,4 +361,16 @@ class TestDatabaseRowOperations:
         log.filter_rows()
         assert len(log.rows) == 3
 
-        # TODO: remaining tests
+        # Test multiple filter values.
+        log.filters["start"] = "2018-09-01 12:00:00"
+        log.filters["end"] = "2018-12-01 12:00:00"
+        log.filters["project"] = "dummy project 2"
+        log.filter_rows()
+        assert len(log.rows) == 1
+        assert log.rows[0][0] == 2
+
+        # Check that nonexistent columns have no effect.
+        log.filters["project"] = ""
+        log.filters["not_real_column"] = "dummy value"
+        log.filter_rows()
+        assert len(log.rows) == 2
