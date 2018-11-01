@@ -421,3 +421,18 @@ class TestDatabaseOperations:
             })
         assert log.rows[2] == (3, "2019-12-31 22:30:00", "2020-01-03 10:00:00",
                 "dummy project 3", "updated tag 3", "dummy notes 3")
+
+    def test_select_all(self, log, database, tmpdir):
+        """Test Log.select_all()."""
+
+        # Assign DB connection/cursor to Log object.
+        conn, cursor = database(tmpdir.strpath)
+        log.conn, log.cursor = conn, cursor
+
+        # Select one row, then run select_all() to ensure all are selected.
+        log.filters["project"] = "dummy project 1"
+        log.filter_rows()
+        assert len(log.rows) == 1
+
+        log.select_all()
+        assert len(log.rows) == 3
