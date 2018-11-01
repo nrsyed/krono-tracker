@@ -3,68 +3,6 @@ import sqlite3
 import pytest
 from krono.log import Log
 
-@pytest.fixture(scope="function")
-def database():
-    """
-    Database factory to mock valid or invalid SQLite database.
-    """
-
-    table_names = {
-            "valid": "sessions",
-            "invalid": "bad_table_name"
-            }
-
-    col_names = {
-            "valid": ("start", "end", "project", "tags", "notes"),
-            "invalid": ("badcol1", "badcol2", "badcol3", "badcol4", "badcol5")
-            }
-
-    # Rows with dummy data.
-    row1 = ("2018-09-29 23:00:00", "2018-09-29 23:30:00",
-            "dummy project 1", "dummy tag 1", "dummy notes 1")
-    row2 = ("2018-10-29 23:00:00", "2018-10-29 23:30:00",
-            "dummy project 2", "dummy tag 2", "dummy notes 2")
-    row3 = ("2020-01-01 12:00:00", "2020-01-03 10:00:00",
-            "dummy project 3", "dummy tag 3", "dummy notes 3")
-
-    # Track number of times factory is called for use in DB filename to
-    # create a unique DB each time instead of loading existing DB.
-    num_calls = 0
-
-    def _database(directory, table="valid", cols="valid"):
-        nonlocal num_calls
-        db_filename = "test{}.db".format(num_calls)
-        db_filepath = os.path.join(directory, db_filename)
-        num_calls += 1
-
-        conn = sqlite3.connect(db_filepath)
-        cursor = conn.cursor()
-        if table:
-            schema = "CREATE TABLE " + table_names[table] + " (" \
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT," \
-                + "{} TEXT, {} TEXT, {} TEXT, {} TEXT, {} TEXT".format(
-                        *col_names[cols]) \
-                + ")"
-
-            insert_query = "INSERT INTO " + table_names[table] \
-                    + " ({}, {}, {}, {}, {}) ".format(*col_names[cols]) \
-                    + "VALUES (?, ?, ?, ?, ?)"
-
-            cursor.execute(schema)
-            cursor.execute(insert_query, row1)
-            cursor.execute(insert_query, row2)
-            cursor.execute(insert_query, row3)
-            conn.commit()
-
-        return (conn, cursor)
-
-    return _database
-
-@pytest.fixture(scope="function")
-def log():
-    log = Log()
-    return log
-
 class TestLogObject:
     """Test instantiation of Log object."""
 
@@ -105,6 +43,7 @@ class TestCreateLoadUnload:
         loaded properly, and whether an exception is thrown if the file to be
         created already exists.
         """
+
         filepath = str(tmpdir.join(self.filename))
         log.create_db(filepath)
         assert os.path.isfile(filepath)
@@ -114,12 +53,11 @@ class TestCreateLoadUnload:
         with pytest.raises(FileExistsError):
             log.create_db(filepath)
 
-    def test_unload_db(self, log, database, tmpdir):
+    def test_unload_db(self, log_db):
         """Test DB unload."""
 
         # Set Log attributes to dummy truthy values.
-        conn, cursor = database(tmpdir.strpath, table="valid", cols="valid")
-        log.conn, log.cursor = conn, cursor
+        log = log_db
         log.last_inserted_row = 1
 
         log.unload_db()
@@ -422,12 +360,10 @@ class TestDatabaseOperations:
         assert log.rows[2] == (3, "2019-12-31 22:30:00", "2020-01-03 10:00:00",
                 "dummy project 3", "updated tag 3", "dummy notes 3")
 
-    def test_select_all(self, log, database, tmpdir):
+    def test_select_all(self, log_db):
         """Test Log.select_all()."""
 
-        # Assign DB connection/cursor to Log object.
-        conn, cursor = database(tmpdir.strpath)
-        log.conn, log.cursor = conn, cursor
+        log = log_db
 
         # Select one row, then run select_all() to ensure all are selected.
         log.filters["project"] = "dummy project 1"
