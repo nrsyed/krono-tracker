@@ -210,14 +210,12 @@ class Log:
         """Update the columns a row in the DB based on its ID number."""
 
         if self.cursor is None:
-            logging.error("No database loaded.")
-            return False
+            raise RuntimeError("No database loaded.")
 
         cols_to_update = self.get_valid_columns(updated_params)
 
         if not cols_to_update:
-            logging.debug("No matching keys in dict.")
-            return False
+            raise RuntimeError("No valid parameters supplied.")
 
         # Build SQL update query.
         query_update_strings = []
@@ -231,14 +229,9 @@ class Log:
         query = "UPDATE {} SET\n{}\nWHERE id = ?".format(
             self.table, ",\n".join(query_update_strings))
 
-        try:
-            self.cursor.execute(query, values)
-            self.conn.commit()
-            self.filter_rows()
-            return True
-        except Exception as e:
-            logging.error(e)
-            return False
+        self.cursor.execute(query, values)
+        self.conn.commit()
+        self.filter_rows()
 
 
     ### Methods, properties that do not directly interact with a DB. ###
