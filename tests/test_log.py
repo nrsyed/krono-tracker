@@ -180,10 +180,10 @@ class TestCreateLoadUnload:
             log._verify_db()
         assert str(e.value) == "Table does not contain correct columns."
 
-class TestDatabaseRowOperations:
+class TestDatabaseOperations:
     """
-    Test methods for Log methods related to modifying DB rows: add,
-    delete, modify, and obtain last modified row ID.
+    Test methods for Log methods that directly interact with and/or modify
+    the DB: add/delete/update rows and obtain last inserted row ID.
     """
 
     def test_add_row(self, log, database, tmpdir):
