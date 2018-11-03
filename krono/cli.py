@@ -97,7 +97,7 @@ class CLI(cmd.Cmd):
         """
 
         if arg == "":
-            print("Error: No filename entered.")
+            logging.error("No filename entered.")
             return
 
         filepath = os.path.normpath(os.path.join(self.path, arg))
