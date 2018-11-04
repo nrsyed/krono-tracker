@@ -35,7 +35,7 @@ class CLI(cmd.Cmd):
         USAGE: setdir [../PATH/TO/NEW/DIRECTORY]
         """
 
-        new_path = os.path.normpath(os.path.join(self.path, arg))
+        new_path = os.path.join(self.path, arg)
         if os.path.isdir(new_path):
             self.path = new_path
             print(self.path)
@@ -135,6 +135,7 @@ class CLI(cmd.Cmd):
         """
 
         self.path = os.getcwd()
+        print(self.path)
 
     def do_view(self, arg):
         """
