@@ -10,6 +10,18 @@ def cli():
 class TestCLI:
     """Test methods for command line interface."""
 
+    def test_create(self, cli, caplog, tmpdir):
+        """Test do_create()."""
+
+        # Test blank input.
+        cli.do_create("")
+        assert "No filename entered." in caplog.messages
+
+        # Test creation of new database.
+        filepath = os.path.join(tmpdir.strpath, "new.db")
+        cli.do_create(filepath)
+        assert "Creating database file {}".format(filepath) in caplog.messages
+
     def test_load(self, cli, caplog, database, tmpdir):
         """Test do_load()."""
 
