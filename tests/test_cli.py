@@ -10,12 +10,9 @@ def cli():
 class TestCLI:
     """Test methods for command line interface."""
 
-    def test_load(self, cli, capfd, tmpdir):
+    def test_load(self, cli, caplog, database, tmpdir):
         """Test do_load()."""
 
         # Test blank input.
         cli.do_load("")
-        stdout = capfd.readouterr().out
-        assert stdout.rstrip() == "Error: No filename entered."
-
-        # TODO: remaining tests
+        assert "No filename entered." in caplog.messages
