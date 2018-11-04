@@ -56,7 +56,7 @@ def database():
             cursor.execute(insert_query, row3)
             conn.commit()
 
-        return (conn, cursor)
+        return (conn, cursor, db_filepath)
 
     return _database
 

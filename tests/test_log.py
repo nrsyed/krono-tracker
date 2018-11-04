@@ -83,13 +83,13 @@ class TestCreateLoadUnload:
     def test_verify_db(self, database, tmpdir):
         """Test verification of DB table and schema."""
 
-        valid_conn, valid_cursor = database(
+        valid_conn, valid_cursor, _ = database(
                 tmpdir.strpath, table="valid", cols="valid")
-        no_table_conn, no_table_cursor = database(
+        no_table_conn, no_table_cursor, _ = database(
                 tmpdir.strpath, table=None, cols="valid")
-        invalid_table_conn, invalid_table_cursor = database(
+        invalid_table_conn, invalid_table_cursor, _ = database(
                 tmpdir.strpath, table="invalid", cols="valid")
-        invalid_cols_conn, invalid_cols_cursor = database(
+        invalid_cols_conn, invalid_cols_cursor, _ = database(
                 tmpdir.strpath, table="valid", cols="invalid")
 
         # Test valid database.
@@ -153,7 +153,7 @@ class TestDatabaseOperations:
         assert str(e.value) == "No database loaded."
 
         # Assign SQL connection/cursor to Log object.
-        conn, cursor = database(tmpdir.strpath)
+        conn, cursor, _ = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
         # Add and check first row.
@@ -191,7 +191,7 @@ class TestDatabaseOperations:
         assert str(e.value) == "No database loaded."
 
         # Assign SQL connection/cursor to Log object.
-        conn, cursor = database(tmpdir.strpath)
+        conn, cursor, _ = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
         # Attempt to pass int instead of list.
@@ -245,7 +245,7 @@ class TestDatabaseOperations:
         assert str(e.value) == "No database loaded."
 
         # Assign DB connection/cursor to Log object.
-        conn, cursor = database(tmpdir.strpath)
+        conn, cursor, _ = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
         # Run default filter (should return all results).
@@ -322,7 +322,7 @@ class TestDatabaseOperations:
         assert str(e.value) == "No database loaded."
 
         # Assign DB connection/cursor to Log object.
-        conn, cursor = database(tmpdir.strpath)
+        conn, cursor, _ = database(tmpdir.strpath)
         log.conn, log.cursor = conn, cursor
 
         # Check that exception is raised if no valid column names
