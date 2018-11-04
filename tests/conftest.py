@@ -67,5 +67,5 @@ def log():
 
 @pytest.fixture(scope="function")
 def log_db(log, database, tmpdir):
-    log.conn, log.cursor = database(tmpdir.strpath)
+    log.conn, log.cursor, _ = database(tmpdir.strpath)
     return log
