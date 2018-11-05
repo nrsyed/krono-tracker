@@ -16,12 +16,7 @@ class CLI(cmd.Cmd):
 
     @property
     def log_loaded(self):
-        if self.log:
-            logging.debug("Log file loaded.")
-            return True
-        else:
-            logging.error("No log file loaded.")
-            return False
+        return bool(self.log)
 
     def emptyline(self):
         pass
