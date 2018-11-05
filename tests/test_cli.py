@@ -50,6 +50,12 @@ class TestCLI:
         assert cli.log
         assert cli.log.conn != previous_conn
 
+    def test_log_loaded(self, cli):
+        """Test log_loaded attribute."""
+        assert not cli.log_loaded
+        cli.log = "arbitrary truthy value"
+        assert cli.log_loaded
+
     def test_path(self, cli, capfd, caplog, tmpdir):
         """Test CLI path navigation methods."""
 
