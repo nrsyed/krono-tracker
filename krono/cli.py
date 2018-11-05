@@ -14,6 +14,15 @@ class CLI(cmd.Cmd):
         self.log = None
         cmd.Cmd.__init__(self)
 
+    @property
+    def log_loaded(self):
+        if self.log:
+            logging.debug("Log file loaded.")
+            return True
+        else:
+            logging.error("No log file loaded.")
+            return False
+
     def emptyline(self):
         pass
 
@@ -78,11 +87,8 @@ class CLI(cmd.Cmd):
         Select criteria to filter entries.
         """
 
-        if self.log is not None:
+        if self.log_loaded:
             self.log.modify_filter()
-        else:
-            logging.error("No log file loaded.")
-
 
     def do_getdir(self, arg):
         """
@@ -103,10 +109,10 @@ class CLI(cmd.Cmd):
         filepath = os.path.normpath(os.path.join(self.path, arg))
 
         try:
-            if self.log is None:
-                self.log = Log()
-            else:
+            if self.log_loaded:
                 self.log.unload_db()
+            else:
+                self.log = Log()
 
             self.log.load_db(filepath)
             self.log.select_all()
@@ -144,12 +150,3 @@ class CLI(cmd.Cmd):
 
         if self.log_loaded:
             self.log.view()
-
-    @property
-    def log_loaded(self):
-        if self.log is not None:
-            logging.debug("Log file loaded.")
-            return True
-        else:
-            logging.error("No log file loaded.")
-            return False
