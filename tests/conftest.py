@@ -2,6 +2,7 @@ import os
 import sqlite3
 import pytest
 from krono.log import Log
+from krono.cli import CLI
 
 @pytest.fixture(scope="function")
 def database():
@@ -69,3 +70,7 @@ def log():
 def log_db(log, database, tmpdir):
     log.conn, log.cursor, _ = database(tmpdir.strpath)
     return log
+
+@pytest.fixture(scope="function")
+def cli():
+    return CLI()

@@ -3,10 +3,6 @@ import sqlite3
 import pytest
 from krono.cli import CLI
 
-@pytest.fixture(scope="function")
-def cli():
-    return CLI()
-
 class TestCLI:
     """Test methods for command line interface."""
 
